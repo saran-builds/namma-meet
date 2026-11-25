@@ -5,7 +5,6 @@ const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-
 const io = new Server(server);
 
 app.use(express.static("public"));
@@ -14,22 +13,18 @@ let waitingUsers = [];
 let partners = new Map();
 let blockedPairs = new Set();
 
-// Generate a unique key for a pair of users
 function getPairKey(user1, user2) {
     return [user1, user2].sort().join("_");
 }
 
-// Check whether two users have blocked each other
 function isBlocked(user1, user2) {
     return blockedPairs.has(getPairKey(user1, user2));
 }
 
-// Remove a user from the waiting list
 function removeFromWaiting(socketId) {
     waitingUsers = waitingUsers.filter(id => id !== socketId);
 }
 
-// Disconnect two users from each other
 function disconnectPartner(socket, notify = true) {
     const partnerId = partners.get(socket.id);
 
@@ -43,7 +38,6 @@ function disconnectPartner(socket, notify = true) {
     }
 }
 
-// Find a random stranger
 function findMatch(socket) {
     removeFromWaiting(socket.id);
 
@@ -72,72 +66,51 @@ function findMatch(socket) {
     partners.set(socket.id, partnerId);
     partners.set(partnerId, socket.id);
 
-    io.to(socket.id).emit("matched", {
-        initiator: true
-    });
-
-    io.to(partnerId).emit("matched", {
-        initiator: false
-    });
+    io.to(socket.id).emit("matched", { initiator: true });
+    io.to(partnerId).emit("matched", { initiator: false });
 
     console.log("Users matched:", socket.id, partnerId);
 }
 
-// Socket connections
 io.on("connection", socket => {
     console.log("User connected:", socket.id);
 
-    // Start chat
+    // START
     socket.on("start-chat", () => {
         if (partners.has(socket.id)) return;
         findMatch(socket);
     });
 
-    // Find next stranger
+    // NEXT STRANGER
     socket.on("next-stranger", () => {
         removeFromWaiting(socket.id);
         disconnectPartner(socket);
         findMatch(socket);
     });
 
-    // End chat
+    // END CHAT
     socket.on("end-chat", () => {
         removeFromWaiting(socket.id);
         disconnectPartner(socket);
-
         socket.emit("chat-ended");
     });
 
-    // Send text message
+    // TEXT MESSAGES
     socket.on("send-message", message => {
         const partnerId = partners.get(socket.id);
 
-        if (!partnerId) {
-            console.log("Message rejected: user has no partner");
-            return;
-        }
-
-        if (typeof message !== "string") return;
+        if (!partnerId || typeof message !== "string") return;
 
         const cleanMessage = message.trim();
 
-        if (cleanMessage.length === 0 || cleanMessage.length > 2000) {
-            return;
-        }
+        if (!cleanMessage || cleanMessage.length > 2000) return;
 
-        // Send message to the stranger
         io.to(partnerId).emit("chat-message", cleanMessage);
-
-        console.log("Message delivered:", socket.id, "to", partnerId);
     });
 
-    // -----------------------------
-    // VIDEO CHAT SIGNALING
-    // -----------------------------
-
+    // VIDEO SIGNALING
     socket.on("video-ready", () => {
         const partnerId = partners.get(socket.id);
-
         if (partnerId) {
             io.to(partnerId).emit("partner-video-ready");
         }
@@ -145,7 +118,6 @@ io.on("connection", socket => {
 
     socket.on("video-offer", offer => {
         const partnerId = partners.get(socket.id);
-
         if (partnerId) {
             io.to(partnerId).emit("video-offer", offer);
         }
@@ -153,7 +125,6 @@ io.on("connection", socket => {
 
     socket.on("video-answer", answer => {
         const partnerId = partners.get(socket.id);
-
         if (partnerId) {
             io.to(partnerId).emit("video-answer", answer);
         }
@@ -161,7 +132,6 @@ io.on("connection", socket => {
 
     socket.on("video-candidate", candidate => {
         const partnerId = partners.get(socket.id);
-
         if (partnerId) {
             io.to(partnerId).emit("video-candidate", candidate);
         }
@@ -169,16 +139,12 @@ io.on("connection", socket => {
 
     socket.on("end-video", () => {
         const partnerId = partners.get(socket.id);
-
         if (partnerId) {
             io.to(partnerId).emit("partner-video-ended");
         }
     });
 
-    // -----------------------------
-    // REPORT USER
-    // -----------------------------
-
+    // REPORT
     socket.on("report-user", reason => {
         const allowedReasons = [
             "Inappropriate behaviour",
@@ -191,26 +157,21 @@ io.on("connection", socket => {
         if (!allowedReasons.includes(reason)) return;
 
         const partnerId = partners.get(socket.id);
-
         if (!partnerId) return;
 
         console.log("USER REPORT:", {
             reporter: socket.id,
             reportedUser: partnerId,
-            reason: reason,
+            reason,
             time: new Date().toISOString()
         });
 
         socket.emit("report-received");
     });
 
-    // -----------------------------
-    // BLOCK USER
-    // -----------------------------
-
+    // BLOCK
     socket.on("block-user", () => {
         const partnerId = partners.get(socket.id);
-
         if (!partnerId) return;
 
         blockedPairs.add(getPairKey(socket.id, partnerId));
@@ -222,16 +183,12 @@ io.on("connection", socket => {
         removeFromWaiting(partnerId);
 
         io.to(partnerId).emit("partner-blocked");
-
         socket.emit("block-confirmed");
 
         console.log("User blocked:", socket.id, partnerId);
     });
 
-    // -----------------------------
-    // USER DISCONNECT
-    // -----------------------------
-
+    // DISCONNECT
     socket.on("disconnect", () => {
         console.log("User disconnected:", socket.id);
 
@@ -240,7 +197,6 @@ io.on("connection", socket => {
     });
 });
 
-// Render hosting port
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, "0.0.0.0", () => {

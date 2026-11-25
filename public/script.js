@@ -1,7 +1,10 @@
 
 const socket = io();
 
-// HTML elements
+// ===============================
+// HTML ELEMENTS
+// ===============================
+
 const languageSelect = document.getElementById("language");
 const statusText = document.getElementById("status");
 const chatBox = document.getElementById("chatBox");
@@ -11,9 +14,6 @@ const startBtn = document.getElementById("startBtn");
 const nextBtn = document.getElementById("nextBtn");
 const sendBtn = document.getElementById("sendBtn");
 
-const videoBtn = document.getElementById("videoBtn");
-const endVideoBtn = document.getElementById("endVideoBtn");
-
 const localVideo = document.getElementById("localVideo");
 const remoteVideo = document.getElementById("remoteVideo");
 
@@ -21,90 +21,127 @@ const endChatBtn = document.getElementById("endChatBtn");
 const reportBtn = document.getElementById("reportBtn");
 const blockBtn = document.getElementById("blockBtn");
 
+// ===============================
+// CONNECTION VARIABLES
+// ===============================
+
+let isMatched = false;
+let isSearching = false;
+let isInitiator = false;
+let partnerVideoReady = false;
+let offerCreated = false;
+let isVideoConnected = false;
+
 let localStream = null;
 let peerConnection = null;
-let isInitiator = false;
-let currentLanguage = "en";
-let pendingCandidates = [];
-let isMatched = false;
+let remoteStream = null;
 
-// Translations
+let pendingCandidates = [];
+
+// ===============================
+// LANGUAGE TRANSLATIONS
+// ===============================
+
 const translations = {
     en: {
-        subtitle: "Meet new people and make friends",
-        languageLabel: "Language",
-        youLabel: "You",
-        strangerLabel: "Stranger",
+        subtitle: "Meet and chat with strangers",
+        language: "Language:",
+        you: "You",
+        stranger: "Stranger",
         chatTitle: "Text Chat",
-        welcomeMessage: "Welcome to NammaMeet! Click Start Chat to meet someone.",
-        start: "Start Chat",
+        welcome: "Welcome to NammaMeet! Click Start to connect with a stranger.",
+        start: "Start",
         next: "Next Stranger",
         send: "Send",
-        video: "Start Video",
-        endVideo: "End Video",
         endChat: "End Chat",
         report: "Report User",
         block: "Block User",
         placeholder: "Type your message...",
-        waiting: "Waiting for a stranger...",
-        connected: "Connected to a stranger!",
-        disconnected: "Your stranger has left.",
-        ended: "You ended the chat."
+        find: "Click Start to find a stranger.",
+        cameraStarting: "Opening your camera and microphone...",
+        waiting: "Your camera is on. Searching for a stranger...",
+        connecting: "Stranger found! Connecting video and audio...",
+        connected: "Video connected! You can now chat.",
+        disconnected: "Your stranger has disconnected. Click Start to find another.",
+        ended: "You ended the chat.",
+        blocked: "User blocked. Click Start to find another stranger.",
+        cameraError: "Please allow camera and microphone access.",
+        videoFailed: "Video connection failed. Please try another stranger."
     },
 
     ta: {
-        subtitle: "புதிய நபர்களை சந்தித்து நண்பர்களாகுங்கள்",
-        languageLabel: "மொழி",
-        youLabel: "நீங்கள்",
-        strangerLabel: "அந்நியர்",
-        chatTitle: "உரை அரட்டை",
-        welcomeMessage: "NammaMeet-க்கு வரவேற்கிறோம்! ஒருவரை சந்திக்க Start Chat அழுத்தவும்.",
-        start: "அரட்டையை தொடங்கு",
+        subtitle: "புதிய நண்பர்களை சந்தித்து பேசுங்கள்",
+        language: "மொழி:",
+        you: "நீங்கள்",
+        stranger: "அந்நியர்",
+        chatTitle: "குறுஞ்செய்தி அரட்டை",
+        welcome: "NammaMeet-க்கு வரவேற்கிறோம்! ஒருவருடன் இணைய Start அழுத்தவும்.",
+        start: "தொடங்கு",
         next: "அடுத்த நபர்",
         send: "அனுப்பு",
-        video: "வீடியோ தொடங்கு",
-        endVideo: "வீடியோ முடி",
         endChat: "அரட்டையை முடி",
-        report: "புகார் அளி",
-        block: "தடு",
+        report: "புகார் செய்",
+        block: "தடை செய்",
         placeholder: "உங்கள் செய்தியை எழுதுங்கள்...",
-        waiting: "ஒருவருக்காக காத்திருக்கிறோம்...",
-        connected: "ஒருவருடன் இணைக்கப்பட்டுள்ளீர்கள்!",
-        disconnected: "மற்ற நபர் வெளியேறிவிட்டார்.",
-        ended: "நீங்கள் அரட்டையை முடித்துவிட்டீர்கள்."
+        find: "ஒருவரைத் தேட Start அழுத்தவும்.",
+        cameraStarting: "கேமரா மற்றும் மைக்ரோஃபோன் திறக்கப்படுகிறது...",
+        waiting: "கேமரா இயக்கத்தில் உள்ளது. ஒருவரைத் தேடுகிறோம்...",
+        connecting: "நபர் கிடைத்தார்! வீடியோ இணைக்கப்படுகிறது...",
+        connected: "வீடியோ இணைக்கப்பட்டது! இப்போது அரட்டை செய்யலாம்.",
+        disconnected: "மற்றவர் வெளியேறிவிட்டார். புதிய நபரைத் தேட Start அழுத்தவும்.",
+        ended: "நீங்கள் அரட்டையை முடித்துவிட்டீர்கள்.",
+        blocked: "பயனர் தடுக்கப்பட்டார். புதிய நபரைத் தேடுங்கள்.",
+        cameraError: "கேமரா மற்றும் மைக்ரோஃபோன் அனுமதி வழங்கவும்.",
+        videoFailed: "வீடியோ இணைப்பு தோல்வியடைந்தது. மீண்டும் முயற்சிக்கவும்."
     }
 };
 
-// Language selection
+let currentLanguage = "en";
+
+function t(key) {
+    return translations[currentLanguage][key];
+}
+
 function updateLanguage() {
     currentLanguage = languageSelect.value;
-    const t = translations[currentLanguage];
 
-    document.getElementById("subtitle").textContent = t.subtitle;
-    document.getElementById("languageLabel").textContent = t.languageLabel;
-    document.getElementById("youLabel").textContent = t.youLabel;
-    document.getElementById("strangerLabel").textContent = t.strangerLabel;
-    document.getElementById("chatTitle").textContent = t.chatTitle;
+    document.getElementById("subtitle").textContent = t("subtitle");
+    document.getElementById("languageLabel").textContent = t("language");
+    document.getElementById("youLabel").textContent = t("you");
+    document.getElementById("strangerLabel").textContent = t("stranger");
+    document.getElementById("chatTitle").textContent = t("chatTitle");
+    document.getElementById("welcomeMessage").textContent = t("welcome");
 
-    startBtn.textContent = t.start;
-    nextBtn.textContent = t.next;
-    sendBtn.textContent = t.send;
-    videoBtn.textContent = t.video;
-    endVideoBtn.textContent = t.endVideo;
-    endChatBtn.textContent = t.endChat;
-    reportBtn.textContent = t.report;
-    blockBtn.textContent = t.block;
+    startBtn.textContent = t("start");
+    nextBtn.textContent = t("next");
+    sendBtn.textContent = t("send");
+    endChatBtn.textContent = t("endChat");
+    reportBtn.textContent = t("report");
+    blockBtn.textContent = t("block");
 
-    messageInput.placeholder = t.placeholder;
+    messageInput.placeholder = t("placeholder");
 }
 
 languageSelect.addEventListener("change", updateLanguage);
-updateLanguage();
 
-// Display a message in the chat
+// ===============================
+// INTERFACE CONTROLS
+// ===============================
+
+function setChatEnabled(enabled) {
+    messageInput.disabled = !enabled;
+    sendBtn.disabled = !enabled;
+    isVideoConnected = enabled;
+}
+
+function setSafetyEnabled(enabled) {
+    endChatBtn.disabled = !enabled;
+    reportBtn.disabled = !enabled;
+    blockBtn.disabled = !enabled;
+}
+
 function showMessage(message, sender) {
     const messageElement = document.createElement("div");
-
     messageElement.classList.add("message");
 
     if (sender === "You") {
@@ -114,11 +151,7 @@ function showMessage(message, sender) {
     }
 
     const senderElement = document.createElement("strong");
-
-    senderElement.textContent =
-        sender === "You"
-            ? (currentLanguage === "ta" ? "நீங்கள்: " : "You: ")
-            : (currentLanguage === "ta" ? "அந்நியர்: " : "Stranger: ");
+    senderElement.textContent = sender + ": ";
 
     const textElement = document.createElement("span");
     textElement.textContent = message;
@@ -127,107 +160,45 @@ function showMessage(message, sender) {
     messageElement.appendChild(textElement);
 
     chatBox.appendChild(messageElement);
-
-    // Automatically scroll to the latest message
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Clear chat messages
 function clearChat() {
     chatBox.innerHTML = "";
 }
 
-// Start chat
-startBtn.addEventListener("click", () => {
-    clearChat();
-    stopVideo();
+// ===============================
+// CAMERA AND MICROPHONE
+// ===============================
 
-    isMatched = false;
-
-    statusText.textContent = translations[currentLanguage].waiting;
-
-    socket.emit("start-chat");
-});
-
-// Waiting
-socket.on("waiting", () => {
-    isMatched = false;
-    statusText.textContent = translations[currentLanguage].waiting;
-});
-
-// Matched
-socket.on("matched", data => {
-    isInitiator = data.initiator;
-    isMatched = true;
-    pendingCandidates = [];
-
-    statusText.textContent = translations[currentLanguage].connected;
-});
-
-// Next stranger
-nextBtn.addEventListener("click", () => {
-    stopVideo();
-    clearChat();
-
-    isMatched = false;
-
-    statusText.textContent = translations[currentLanguage].waiting;
-
-    socket.emit("next-stranger");
-});
-
-// Stranger left
-socket.on("partner-left", () => {
-    isMatched = false;
-
-    stopVideo();
-
-    statusText.textContent = translations[currentLanguage].disconnected;
-});
-
-// -----------------------------
-// TEXT CHAT
-// -----------------------------
-
-function sendMessage() {
-    const message = messageInput.value.trim();
-
-    if (message === "") return;
-
-    if (!isMatched) {
-        alert("Please connect with a stranger before sending a message.");
+async function startVideo() {
+    if (localStream) {
         return;
     }
 
-    // Display your own message immediately
-    showMessage(message, "You");
+    localStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+    });
 
-    // Send the message to the stranger
-    socket.emit("send-message", message);
+    localVideo.srcObject = localStream;
+    await localVideo.play();
 
-    // Clear the input
-    messageInput.value = "";
-    messageInput.focus();
+    console.log("Camera and microphone started.");
 }
 
-// Send button
-sendBtn.addEventListener("click", sendMessage);
-
-// Enter key
-messageInput.addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-        sendMessage();
+function stopLocalCamera() {
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
     }
-});
 
-// Receive stranger's message
-socket.on("chat-message", message => {
-    showMessage(message, "Stranger");
-});
+    localVideo.srcObject = null;
+}
 
-// -----------------------------
-// VIDEO CHAT
-// -----------------------------
+// ===============================
+// PEER CONNECTION
+// ===============================
 
 const rtcConfiguration = {
     iceServers: [
@@ -238,63 +209,109 @@ const rtcConfiguration = {
 };
 
 function createPeerConnection() {
-    if (peerConnection) return;
+    if (peerConnection) {
+        return peerConnection;
+    }
 
-    peerConnection = new RTCPeerConnection(rtcConfiguration);
+    const pc = new RTCPeerConnection(rtcConfiguration);
+    peerConnection = pc;
 
-    peerConnection.onicecandidate = event => {
-        if (event.candidate) {
+    remoteStream = new MediaStream();
+    remoteVideo.srcObject = remoteStream;
+
+    // Add local camera and microphone tracks.
+    localStream.getTracks().forEach(track => {
+        pc.addTrack(track, localStream);
+    });
+
+    // Receive stranger's video and audio.
+    pc.ontrack = event => {
+        event.streams[0].getTracks().forEach(track => {
+            if (!remoteStream.getTracks().some(
+                existingTrack => existingTrack.id === track.id
+            )) {
+                remoteStream.addTrack(track);
+            }
+        });
+
+        remoteVideo.play().catch(error => {
+            console.log("Remote video playback:", error);
+        });
+    };
+
+    // Exchange network connection candidates.
+    pc.onicecandidate = event => {
+        if (event.candidate && isMatched) {
             socket.emit("video-candidate", event.candidate);
         }
     };
 
-    peerConnection.ontrack = event => {
-        remoteVideo.srcObject = event.streams[0];
+    // Detect successful video connection.
+    pc.onconnectionstatechange = () => {
+        if (peerConnection !== pc) return;
+
+        console.log("Connection state:", pc.connectionState);
+
+        if (pc.connectionState === "connected" && isMatched) {
+            setChatEnabled(true);
+            statusText.textContent = t("connected");
+        }
+
+        if (
+            pc.connectionState === "failed" ||
+            pc.connectionState === "disconnected"
+        ) {
+            setChatEnabled(false);
+            statusText.textContent = t("videoFailed");
+        }
+
+        if (pc.connectionState === "closed") {
+            setChatEnabled(false);
+        }
     };
 
-    if (localStream) {
-        localStream.getTracks().forEach(track => {
-            peerConnection.addTrack(track, localStream);
-        });
-    }
+    return pc;
 }
 
-// Start video
-async function startVideo() {
-    try {
-        if (!isMatched) {
-            alert("Please connect with a stranger first.");
-            return;
-        }
+function closePeerConnection() {
+    if (peerConnection) {
+        peerConnection.onconnectionstatechange = null;
+        peerConnection.onicecandidate = null;
+        peerConnection.ontrack = null;
 
-        if (!localStream) {
-            localStream = await navigator.mediaDevices.getUserMedia({
-                video: true,
-                audio: true
-            });
-
-            localVideo.srcObject = localStream;
-        }
-
-        createPeerConnection();
-
-        socket.emit("video-ready");
-
-        videoBtn.disabled = true;
-        endVideoBtn.disabled = false;
-
-    } catch (error) {
-        console.error("Camera error:", error);
-        alert("Please allow camera and microphone access.");
+        peerConnection.close();
+        peerConnection = null;
     }
+
+    remoteStream = null;
+    pendingCandidates = [];
+
+    remoteVideo.srcObject = null;
+
+    partnerVideoReady = false;
+    offerCreated = false;
+
+    setChatEnabled(false);
 }
 
-videoBtn.addEventListener("click", startVideo);
+// ===============================
+// VIDEO OFFER
+// ===============================
 
-// Stranger ready
-socket.on("partner-video-ready", async () => {
+async function maybeCreateOffer() {
+    if (
+        !isMatched ||
+        !isInitiator ||
+        !partnerVideoReady ||
+        !localStream ||
+        !peerConnection ||
+        offerCreated
+    ) {
+        return;
+    }
+
     try {
-        if (!peerConnection || !localStream || !isInitiator) return;
+        offerCreated = true;
 
         const offer = await peerConnection.createOffer();
 
@@ -303,19 +320,117 @@ socket.on("partner-video-ready", async () => {
         socket.emit("video-offer", offer);
 
     } catch (error) {
-        console.error("Video offer error:", error);
+        offerCreated = false;
+        console.error("Offer creation error:", error);
+    }
+}
+
+// ===============================
+// START BUTTON
+// CAMERA OPENS FIRST
+// ===============================
+
+startBtn.addEventListener("click", async () => {
+    if (isSearching || isMatched) return;
+
+    startBtn.disabled = true;
+
+    statusText.textContent = t("cameraStarting");
+
+    try {
+        // First open the camera and microphone.
+        await startVideo();
+
+        // Do not search if the user left this attempt.
+        if (!startBtn.disabled || isMatched) return;
+
+        clearChat();
+
+        isSearching = true;
+        statusText.textContent = t("waiting");
+
+        // Only search after camera access succeeds.
+        socket.emit("start-chat");
+
+    } catch (error) {
+        console.error("Camera error:", error);
+
+        stopLocalCamera();
+
+        startBtn.disabled = false;
+        statusText.textContent = t("find");
+
+        alert(t("cameraError"));
     }
 });
 
-// Receive offer
-socket.on("video-offer", async offer => {
+// ===============================
+// SERVER MATCHING
+// ===============================
+
+socket.on("waiting", () => {
+    isSearching = true;
+    statusText.textContent = t("waiting");
+});
+
+socket.on("matched", async data => {
+    isMatched = true;
+    isSearching = false;
+
+    isInitiator = Boolean(data && data.initiator);
+
+    startBtn.disabled = true;
+    nextBtn.disabled = false;
+
+    setChatEnabled(false);
+    setSafetyEnabled(true);
+
+    clearChat();
+
+    statusText.textContent = t("connecting");
+
     try {
+        // Reuse the camera already opened by Start.
         if (!localStream) {
             await startVideo();
         }
 
-        if (!peerConnection) return;
+        if (!isMatched) return;
 
+        createPeerConnection();
+
+        // Tell the stranger our camera is ready.
+        socket.emit("video-ready");
+
+        await maybeCreateOffer();
+
+    } catch (error) {
+        console.error("Matching video error:", error);
+
+        socket.emit("end-chat");
+
+        resetChat(true);
+        statusText.textContent = t("cameraError");
+    }
+});
+
+// Stranger's camera is ready.
+socket.on("partner-video-ready", async () => {
+    if (!isMatched) return;
+
+    partnerVideoReady = true;
+
+    await maybeCreateOffer();
+});
+
+// ===============================
+// RECEIVE VIDEO OFFER
+// ===============================
+
+socket.on("video-offer", async offer => {
+    if (!isMatched || !peerConnection) return;
+
+    try {
         await peerConnection.setRemoteDescription(
             new RTCSessionDescription(offer)
         );
@@ -326,113 +441,188 @@ socket.on("video-offer", async offer => {
 
         socket.emit("video-answer", answer);
 
-        await processPendingCandidates();
+        for (const candidate of pendingCandidates) {
+            await peerConnection.addIceCandidate(
+                new RTCIceCandidate(candidate)
+            );
+        }
+
+        pendingCandidates = [];
 
     } catch (error) {
         console.error("Video offer error:", error);
     }
 });
 
-// Receive answer
-socket.on("video-answer", async answer => {
-    try {
-        if (!peerConnection) return;
+// ===============================
+// RECEIVE VIDEO ANSWER
+// ===============================
 
+socket.on("video-answer", async answer => {
+    if (!peerConnection || !isMatched) return;
+
+    try {
         await peerConnection.setRemoteDescription(
             new RTCSessionDescription(answer)
         );
 
-        await processPendingCandidates();
+        for (const candidate of pendingCandidates) {
+            await peerConnection.addIceCandidate(
+                new RTCIceCandidate(candidate)
+            );
+        }
+
+        pendingCandidates = [];
 
     } catch (error) {
         console.error("Video answer error:", error);
     }
 });
 
-// Receive ICE candidates
+// ===============================
+// RECEIVE ICE CANDIDATES
+// ===============================
+
 socket.on("video-candidate", async candidate => {
+    if (!isMatched) return;
+
     try {
-        if (!peerConnection || !peerConnection.remoteDescription) {
+        if (peerConnection && peerConnection.remoteDescription) {
+            await peerConnection.addIceCandidate(
+                new RTCIceCandidate(candidate)
+            );
+        } else {
             pendingCandidates.push(candidate);
-            return;
         }
-
-        await peerConnection.addIceCandidate(
-            new RTCIceCandidate(candidate)
-        );
-
     } catch (error) {
         console.error("ICE candidate error:", error);
     }
 });
 
-// Process pending candidates
-async function processPendingCandidates() {
-    if (!peerConnection || !peerConnection.remoteDescription) return;
+// ===============================
+// TEXT MESSAGING
+// ===============================
 
-    for (const candidate of pendingCandidates) {
-        try {
-            await peerConnection.addIceCandidate(
-                new RTCIceCandidate(candidate)
-            );
-        } catch (error) {
-            console.error("ICE candidate error:", error);
-        }
+function sendMessage() {
+    const message = messageInput.value.trim();
+
+    if (
+        !isMatched ||
+        !isVideoConnected ||
+        !peerConnection ||
+        peerConnection.connectionState !== "connected" ||
+        !message
+    ) {
+        return;
     }
 
-    pendingCandidates = [];
+    showMessage(message, "You");
+
+    socket.emit("send-message", message);
+
+    messageInput.value = "";
+    messageInput.focus();
 }
 
-// Stop video
-function stopVideo() {
-    if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        localStream = null;
+sendBtn.addEventListener("click", sendMessage);
+
+messageInput.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+        sendMessage();
     }
-
-    if (peerConnection) {
-        peerConnection.close();
-        peerConnection = null;
-    }
-
-    localVideo.srcObject = null;
-    remoteVideo.srcObject = null;
-
-    pendingCandidates = [];
-
-    videoBtn.disabled = false;
-    endVideoBtn.disabled = true;
-}
-
-// End video
-endVideoBtn.addEventListener("click", () => {
-    socket.emit("end-video");
-    stopVideo();
 });
 
-// Stranger ended video
-socket.on("partner-video-ended", () => {
-    stopVideo();
+socket.on("chat-message", message => {
+    if (!isMatched || !isVideoConnected) return;
+
+    showMessage(message, "Stranger");
 });
 
-// -----------------------------
-// SAFETY CONTROLS
-// -----------------------------
+// ===============================
+// RESET CHAT
+// ===============================
 
-// End chat
-endChatBtn.addEventListener("click", () => {
-    socket.emit("end-chat");
-
+function resetChat(stopCamera = false) {
     isMatched = false;
+    isSearching = false;
+    isInitiator = false;
+    partnerVideoReady = false;
+    offerCreated = false;
 
-    stopVideo();
+    closePeerConnection();
+
+    if (stopCamera) {
+        stopLocalCamera();
+    }
+
+    setSafetyEnabled(false);
+    setChatEnabled(false);
+
+    startBtn.disabled = false;
+    nextBtn.disabled = true;
+
+    messageInput.value = "";
+}
+
+// ===============================
+// NEXT STRANGER
+// KEEP CAMERA ON
+// ===============================
+
+nextBtn.addEventListener("click", () => {
+    if (!isMatched && !isSearching) return;
+
+    resetChat(false);
+
     clearChat();
 
-    statusText.textContent = translations[currentLanguage].ended;
+    isSearching = true;
+    startBtn.disabled = true;
+
+    statusText.textContent = t("waiting");
+
+    // The camera stays on while finding another stranger.
+    socket.emit("next-stranger");
 });
 
-// Report user
+// ===============================
+// END CHAT
+// STOP CAMERA
+// ===============================
+
+endChatBtn.addEventListener("click", () => {
+    if (!isMatched) return;
+
+    socket.emit("end-chat");
+
+    resetChat(true);
+
+    statusText.textContent = t("ended");
+});
+
+// Stranger disconnects.
+socket.on("partner-left", () => {
+    resetChat(true);
+
+    clearChat();
+
+    statusText.textContent = t("disconnected");
+});
+
+// Server confirms chat ended.
+socket.on("chat-ended", () => {
+    resetChat(true);
+
+    statusText.textContent = t("ended");
+});
+
+// ===============================
+// REPORT USER
+// ===============================
+
 reportBtn.addEventListener("click", () => {
+    if (!isMatched) return;
+
     const reason = prompt(
         "Why are you reporting this user?\n\n" +
         "1. Inappropriate behaviour\n" +
@@ -465,22 +655,24 @@ socket.on("report-received", () => {
     alert("Thank you. Your report has been received.");
 });
 
-// Block user
+// ===============================
+// BLOCK USER
+// ===============================
+
 blockBtn.addEventListener("click", () => {
-    const confirmBlock = confirm(
+    if (!isMatched) return;
+
+    const confirmed = confirm(
         "Are you sure you want to block this user?"
     );
 
-    if (!confirmBlock) return;
+    if (!confirmed) return;
 
     socket.emit("block-user");
 
-    isMatched = false;
+    resetChat(true);
 
-    stopVideo();
-
-    statusText.textContent =
-        "User blocked. You can find another stranger.";
+    statusText.textContent = t("blocked");
 });
 
 socket.on("block-confirmed", () => {
@@ -488,13 +680,21 @@ socket.on("block-confirmed", () => {
 });
 
 socket.on("partner-blocked", () => {
-    isMatched = false;
-    stopVideo();
+    resetChat(true);
 
-    statusText.textContent = "This chat has ended.";
+    clearChat();
+
+    statusText.textContent = t("disconnected");
 });
 
-socket.on("chat-ended", () => {
-    isMatched = false;
-    statusText.textContent = translations[currentLanguage].ended;
-});
+// ===============================
+// INITIAL PAGE SETTINGS
+// ===============================
+
+setChatEnabled(false);
+setSafetyEnabled(false);
+
+startBtn.disabled = false;
+nextBtn.disabled = true;
+
+updateLanguage();

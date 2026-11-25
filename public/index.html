@@ -4,105 +4,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NammaMeet - Video Chat</title>
+    <title>NammaMeet</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <div class="app">
 
-        <!-- Header -->
-        <header class="header">
-            <div>
-                <h1>❤️NammaMeet</h1>
-                <p id="subtitle">Meet new people through random video chat!</p>
+<div class="app">
+
+    <header class="header">
+        <div>
+            <h1>NammaMeet</h1>
+            <p id="subtitle">Meet and chat with strangers</p>
+        </div>
+
+        <div>
+            <label id="languageLabel" for="language">Language:</label>
+            <select id="language">
+                <option value="en">English</option>
+                <option value="ta">தமிழ்</option>
+            </select>
+        </div>
+    </header>
+
+    <main class="main-layout">
+
+        <!-- VIDEO SECTION -->
+        <section class="video-section">
+
+            <div class="video-box">
+                <video id="localVideo" autoplay muted playsinline></video>
+                <p id="youLabel">You</p>
             </div>
 
-            <div class="language-section">
-                <label id="languageLabel" for="language">Choose Language:</label>
-                <select id="language">
-                    <option value="en">English</option>
-                    <option value="ta">தமிழ்</option>
-                </select>
+            <div class="video-box">
+                <video id="remoteVideo" autoplay playsinline></video>
+                <p id="strangerLabel">Stranger</p>
             </div>
-        </header>
 
-        <!-- Main Screen -->
-        <main class="main-layout">
+            <div class="video-controls">
+                <button id="startBtn">Start</button>
+                <button id="nextBtn" disabled>Next Stranger</button>
+            </div>
 
-            <!-- LEFT: Video Section -->
-            <section class="video-section">
+        </section>
 
-                <div class="video-box">
-                    <video id="localVideo" autoplay muted playsinline></video>
-                    <p id="youLabel">You</p>
-                </div>
+        <!-- TEXT CHAT SECTION -->
+        <section class="chat-section">
 
-                <div class="video-box">
-                    <video id="remoteVideo" autoplay playsinline></video>
-                    <p id="strangerLabel">Stranger</p>
-                </div>
+            <h2 id="chatTitle">Text Chat</h2>
 
-                <div class="video-controls">
-                    <button id="videoBtn">📹 Start Video Chat</button>
-                    <button id="endVideoBtn">End Video Chat</button>
-                </div>
+            <p id="status">Click Start to find a stranger.</p>
 
-            </section>
+            <div id="chatBox">
+                <p id="welcomeMessage">
+                    Welcome to NammaMeet! Click Start to connect with a stranger.
+                </p>
+            </div>
 
-            <!-- CENTRE: Text Chat Section -->
-            <section class="chat-section">
+            <div class="message-area">
+                <input
+                    type="text"
+                    id="messageInput"
+                    placeholder="Type your message..."
+                    disabled
+                    autocomplete="off"
+                >
 
-                <div class="chat-header">
-                    <h2 id="chatTitle">Text Chat</h2>
-                    <p id="status">Waiting to connect...</p>
-                </div>
+                <button id="sendBtn" disabled>Send</button>
+            </div>
 
-                <div id="chatBox" class="chat-box">
-                    <p id="welcomeMessage">
-                        Welcome! Start chatting with a stranger.
-                    </p>
-                </div>
+            <!-- SAFETY BUTTONS -->
+            <div class="safety-buttons">
+                <button id="endChatBtn" disabled>End Chat</button>
+                <button id="reportBtn" disabled>Report User</button>
+                <button id="blockBtn" disabled>Block User</button>
+            </div>
 
-                <div class="message-input">
-                    <input
-                        type="text"
-                        id="messageInput"
-                        placeholder="Type your message..."
-                        autocomplete="off"
-                    >
-                    <button id="sendBtn">Send</button>
-                </div>
+        </section>
 
-                
-<div class="main-buttons">
-    <button id="startBtn">Start Chat</button>
-    <button id="nextBtn">Next Stranger</button>
+        <!-- EMPTY RIGHT SECTION -->
+        <section class="empty-section"></section>
+
+    </main>
+
+    <footer>
+        <p>Connect. Chat. Make Friends.</p>
+    </footer>
+
 </div>
 
-<div class="safety-buttons">
-    <button id="endChatBtn">🚪 End Chat</button>
-    <button id="reportBtn">🚩 Report User</button>
-    <button id="blockBtn">🚫 Block User</button>
-</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="script.js"></script>
 
-
-            </section>
-
-            <!-- RIGHT: Empty Space -->
-            <section class="empty-section"></section>
-
-        </main>
-
-        <footer>
-            <p id="footerText">
-                Be respectful. Stay safe. Enjoy meeting new people!
-            </p>
-        </footer>
-
-    </div>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="script.js"></script>
 </body>
 </html>
