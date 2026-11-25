@@ -17,6 +17,7 @@ html, body {
 .app {
     width: 100%;
     height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     padding: 15px 25px 8px;
@@ -66,6 +67,7 @@ html, body {
     grid-template-columns: 1fr 1fr 1fr;
     gap: 20px;
     padding: 10px;
+    overflow: hidden;
 }
 
 /* Left video section */
@@ -74,6 +76,7 @@ html, body {
     flex-direction: column;
     gap: 12px;
     min-height: 0;
+    overflow: hidden;
 }
 
 .video-box {
@@ -92,6 +95,10 @@ html, body {
     display: block;
     object-fit: cover;
     background: #171728;
+}
+
+#localVideo {
+    transform: scaleX(-1);
 }
 
 .video-box p {
@@ -122,8 +129,13 @@ html, body {
     font-size: 12px;
 }
 
-.video-controls button:hover {
+.video-controls button:hover:not(:disabled) {
     background: #725bd1;
+}
+
+.video-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Centre chat section */
@@ -131,12 +143,16 @@ html, body {
     display: flex;
     flex-direction: column;
     min-height: 0;
+    height: 100%;
+    overflow: hidden;
+
     background: #1b1b30;
     border: 1px solid #343450;
     border-radius: 14px;
     padding: 15px;
 }
 
+/* Chat header */
 .chat-header {
     flex-shrink: 0;
     margin-bottom: 12px;
@@ -153,56 +169,191 @@ html, body {
     font-size: 13px;
 }
 
-/* Messages */
-.chat-box {
+/* =========================================
+   MESSAGES - SCROLLABLE CHAT AREA
+========================================= */
+
+.chat-box,
+#chatBox {
     flex: 1;
     min-height: 0;
+
     overflow-y: auto;
     overflow-x: hidden;
+
     background: #111122;
     border-radius: 10px;
     padding: 12px;
     margin-bottom: 12px;
+
     overflow-wrap: anywhere;
+
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
 }
 
-.chat-box p {
-    background: #39305e;
+/* Chat scrollbar */
+.chat-box::-webkit-scrollbar,
+#chatBox::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-box::-webkit-scrollbar-track,
+#chatBox::-webkit-scrollbar-track {
+    background: #1b1b30;
+    border-radius: 10px;
+}
+
+.chat-box::-webkit-scrollbar-thumb,
+#chatBox::-webkit-scrollbar-thumb {
+    background: #51417c;
+    border-radius: 10px;
+}
+
+.chat-box::-webkit-scrollbar-thumb:hover,
+#chatBox::-webkit-scrollbar-thumb:hover {
+    background: #725bd1;
+}
+
+/* Firefox scrollbar */
+.chat-box,
+#chatBox {
+    scrollbar-width: thin;
+    scrollbar-color: #51417c #1b1b30;
+}
+
+/* Welcome message */
+#welcomeMessage {
+    color: #a5a5ba;
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: auto;
+    padding: 10px;
+    background: transparent;
+}
+
+/* =========================================
+   MESSAGE BUBBLES
+========================================= */
+
+.message {
+    max-width: 85%;
+    width: fit-content;
+
     padding: 9px 12px;
     border-radius: 8px;
-    margin-bottom: 9px;
+    margin-bottom: 0;
+
     font-size: 14px;
+    line-height: 1.5;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
-/* Message input */
-.message-input {
+/* Your messages */
+.you-message {
+    align-self: flex-end;
+    background: #5141a5;
+    color: white;
+}
+
+/* Stranger messages */
+.stranger-message {
+    align-self: flex-start;
+    background: #39305e;
+    color: white;
+}
+
+/* =========================================
+   MESSAGE INPUT - STAYS AT BOTTOM
+========================================= */
+
+.message-input,
+.message-area {
     display: flex;
+    align-items: center;
     gap: 8px;
+
     flex-shrink: 0;
+    width: 100%;
+
+    margin-top: 0;
     margin-bottom: 12px;
+    padding-top: 0;
+
+    background: #1b1b30;
 }
 
-.message-input input {
+/* Typing box */
+.message-input input,
+.message-area input {
     flex: 1;
     min-width: 0;
+    width: 0;
+
     padding: 12px;
+
     border: 1px solid #44445c;
     border-radius: 8px;
     outline: none;
+
     background: #292941;
     color: white;
 }
 
-.message-input button {
+.message-input input:focus,
+.message-area input:focus {
+    border-color: #7955d9;
+}
+
+.message-input input::placeholder,
+.message-area input::placeholder {
+    color: #9999b0;
+}
+
+.message-input input:disabled,
+.message-area input:disabled {
+    background: #222238;
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* Send button */
+.message-input button,
+.message-area button {
+    flex-shrink: 0;
+
     padding: 10px 16px;
     border: none;
     border-radius: 8px;
+
     background: #7955d9;
     color: white;
+
     cursor: pointer;
 }
 
-/* Start and Next buttons */
+.message-input button:hover:not(:disabled),
+.message-area button:hover:not(:disabled) {
+    background: #9475ed;
+}
+
+.message-input button:disabled,
+.message-area button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* =========================================
+   START AND NEXT BUTTONS
+========================================= */
+
 .main-buttons {
     display: flex;
     gap: 10px;
@@ -220,9 +371,14 @@ html, body {
     cursor: pointer;
 }
 
-.main-buttons button:hover,
-.message-input button:hover {
+.main-buttons button:hover:not(:disabled),
+.message-input button:hover:not(:disabled) {
     background: #9475ed;
+}
+
+.main-buttons button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Right side intentionally empty */
@@ -230,51 +386,10 @@ html, body {
     min-width: 0;
 }
 
-/* Footer */
-footer {
-    height: 25px;
-    flex-shrink: 0;
-    text-align: center;
-    color: #77778d;
-    font-size: 11px;
-    padding-top: 5px;
-}
+/* =========================================
+   SAFETY BUTTONS
+========================================= */
 
-/* Smaller screens */
-@media (max-width: 850px) {
-    html, body {
-        height: auto;
-        min-height: 100%;
-        overflow: auto;
-    }
-
-    .app {
-        height: auto;
-        min-height: 100vh;
-    }
-
-    .main-layout {
-        grid-template-columns: 1fr;
-    }
-
-    .video-section {
-        min-height: 650px;
-    }
-
-    .empty-section {
-        display: none;
-    }
-
-    .chat-section {
-        min-height: 450px;
-    }
-
-    footer {
-        margin-top: 15px;
-    }
-}
-
-/* Safety buttons */
 .safety-buttons {
     display: flex;
     gap: 8px;
@@ -304,14 +419,153 @@ footer {
     background: #b83250;
 }
 
-#endChatBtn:hover {
+#endChatBtn:hover:not(:disabled) {
     background: #70708a;
 }
 
-#reportBtn:hover {
+#reportBtn:hover:not(:disabled) {
     background: #d69a32;
 }
 
-#blockBtn:hover {
+#blockBtn:hover:not(:disabled) {
     background: #d44460;
+}
+
+.safety-buttons button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+footer {
+    height: 25px;
+    flex-shrink: 0;
+    text-align: center;
+    color: #77778d;
+    font-size: 11px;
+    padding-top: 5px;
+}
+
+/* =========================================
+   SMALLER SCREENS
+========================================= */
+
+@media (max-width: 850px) {
+    html, body {
+        height: auto;
+        min-height: 100%;
+        overflow: auto;
+    }
+
+    .app {
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
+
+    .main-layout {
+        grid-template-columns: 1fr;
+        overflow: visible;
+    }
+
+    .video-section {
+        min-height: 650px;
+        overflow: visible;
+    }
+
+    .video-box {
+        min-height: 250px;
+    }
+
+    .empty-section {
+        display: none;
+    }
+
+    /* Mobile chat stays a fixed-height chat panel */
+    .chat-section {
+        height: 480px;
+        min-height: 450px;
+        max-height: 75vh;
+        max-height: 75dvh;
+        overflow: hidden;
+    }
+
+    .chat-box,
+    #chatBox {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    .message-input,
+    .message-area {
+        flex-shrink: 0;
+    }
+
+    footer {
+        margin-top: 15px;
+    }
+}
+
+/* =========================================
+   VERY SMALL MOBILE SCREENS
+========================================= */
+
+@media (max-width: 480px) {
+    .app {
+        padding: 10px;
+    }
+
+    .header {
+        padding: 0 5px;
+    }
+
+    .header h1 {
+        font-size: 25px;
+    }
+
+    .header p {
+        font-size: 12px;
+    }
+
+    .video-section {
+        min-height: 550px;
+    }
+
+    .video-box {
+        min-height: 220px;
+    }
+
+    .chat-section {
+        height: 460px;
+        min-height: 440px;
+    }
+
+    .message {
+        max-width: 90%;
+        font-size: 13px;
+    }
+
+    .message-input input,
+    .message-area input {
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    .message-input button,
+    .message-area button {
+        padding: 10px 12px;
+    }
+
+    .safety-buttons {
+        gap: 5px;
+    }
+
+    .safety-buttons button {
+        padding: 9px 4px;
+        font-size: 11px;
+    }
 }
