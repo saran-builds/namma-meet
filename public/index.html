@@ -35,6 +35,7 @@
     <!-- WELCOME BANNER -->
     <section class="hero-section" aria-labelledby="heroHeading">
         <div class="hero-content">
+
             <p class="hero-eyebrow"
                data-en="MEET • CHAT • CONNECT"
                data-ta="சந்திக்கலாம் • பேசலாம் • இணைவோம்">
@@ -58,6 +59,7 @@
                 <span>📹 Video Chat</span>
                 <span>🌍 New Connections</span>
             </div>
+
         </div>
     </section>
 
@@ -71,19 +73,60 @@
                 Video Chat
             </h2>
 
-            <div class="video-box">
+            <!-- YOUR CAMERA -->
+            <div class="video-box local-video-box">
+
                 <video id="localVideo" autoplay muted playsinline></video>
+
                 <p id="youLabel">You</p>
+
+                <!-- CAMERA AND MICROPHONE ICONS -->
+                <div class="video-overlay-controls">
+
+                    <button
+                        type="button"
+                        id="cameraToggleBtn"
+                        class="media-icon-btn"
+                        title="Turn Camera Off"
+                        aria-label="Turn Camera Off"
+                        aria-pressed="false"
+                        disabled>
+                    </button>
+
+                    <button
+                        type="button"
+                        id="micToggleBtn"
+                        class="media-icon-btn"
+                        title="Mute Microphone"
+                        aria-label="Mute Microphone"
+                        aria-pressed="false"
+                        disabled>
+                    </button>
+
+                </div>
+
             </div>
 
-            <div class="video-box">
+            <!-- STRANGER CAMERA -->
+            <div class="video-box remote-video-box">
+
                 <video id="remoteVideo" autoplay playsinline></video>
+
                 <p id="strangerLabel">Stranger</p>
+
             </div>
 
+            <!-- START AND NEXT BUTTONS -->
             <div class="video-controls">
-                <button id="startBtn">Start</button>
-                <button id="nextBtn" disabled>Next Stranger</button>
+
+                <button type="button" id="startBtn">
+                    Start
+                </button>
+
+                <button type="button" id="nextBtn" disabled>
+                    Next Stranger
+                </button>
+
             </div>
 
         </section>
@@ -93,15 +136,22 @@
 
             <h2 id="chatTitle">Text Chat</h2>
 
-            <p id="status">Click Start to find a stranger.</p>
+            <p id="status">
+                Click Start to find a stranger.
+            </p>
 
+            <!-- CHAT MESSAGES -->
             <div id="chatBox">
+
                 <p id="welcomeMessage">
                     Welcome to MEETON! Click Start to connect with a stranger.
                 </p>
+
             </div>
 
+            <!-- MESSAGE INPUT -->
             <div class="message-area">
+
                 <input
                     type="text"
                     id="messageInput"
@@ -110,14 +160,39 @@
                     autocomplete="off"
                 >
 
-                <button id="sendBtn" disabled>Send</button>
+                <button
+                    type="button"
+                    id="sendBtn"
+                    disabled>
+                    Send
+                </button>
+
             </div>
 
             <!-- SAFETY BUTTONS -->
             <div class="safety-buttons">
-                <button id="endChatBtn" disabled>End Chat</button>
-                <button id="reportBtn" disabled>Report User</button>
-                <button id="blockBtn" disabled>Block User</button>
+
+                <button
+                    type="button"
+                    id="endChatBtn"
+                    disabled>
+                    End Chat
+                </button>
+
+                <button
+                    type="button"
+                    id="reportBtn"
+                    disabled>
+                    Report User
+                </button>
+
+                <button
+                    type="button"
+                    id="blockBtn"
+                    disabled>
+                    Block User
+                </button>
+
             </div>
 
         </section>
@@ -129,40 +204,61 @@
                 Why MEETON?
             </h2>
 
+            <!-- FEATURE 1 -->
             <div class="feature-card">
+
                 <div class="feature-icon">💬</div>
-                <h3 data-en="Easy Conversations"
+
+                <h3
+                    data-en="Easy Conversations"
                     data-ta="எளிய உரையாடல்கள்">
                     Easy Conversations
                 </h3>
-                <p data-en="Start chatting with new people through simple text messages."
-                   data-ta="எளிய குறுஞ்செய்திகள் மூலம் புதிய நபர்களுடன் பேசத் தொடங்குங்கள்.">
+
+                <p
+                    data-en="Start chatting with new people through simple text messages."
+                    data-ta="எளிய குறுஞ்செய்திகள் மூலம் புதிய நபர்களுடன் பேசத் தொடங்குங்கள்.">
                     Start chatting with new people through simple text messages.
                 </p>
+
             </div>
 
+            <!-- FEATURE 2 -->
             <div class="feature-card">
+
                 <div class="feature-icon">📹</div>
-                <h3 data-en="Video Connections"
+
+                <h3
+                    data-en="Video Connections"
                     data-ta="வீடியோ இணைப்புகள்">
                     Video Connections
                 </h3>
-                <p data-en="Connect face-to-face through video chat."
-                   data-ta="வீடியோ அரட்டை மூலம் நேருக்கு நேர் இணையுங்கள்.">
+
+                <p
+                    data-en="Connect face-to-face through video chat."
+                    data-ta="வீடியோ அரட்டை மூலம் நேருக்கு நேர் இணையுங்கள்.">
                     Connect face-to-face through video chat.
                 </p>
+
             </div>
 
+            <!-- FEATURE 3 -->
             <div class="feature-card">
+
                 <div class="feature-icon">🛡️</div>
-                <h3 data-en="You Stay in Control"
+
+                <h3
+                    data-en="You Stay in Control"
                     data-ta="உங்கள் கட்டுப்பாட்டில்">
                     You Stay in Control
                 </h3>
-                <p data-en="End a chat, find someone new, or use the report and block options."
-                   data-ta="உரையாடலை முடிக்கலாம், புதிய நபரைத் தேடலாம் அல்லது புகார் மற்றும் தடை விருப்பங்களைப் பயன்படுத்தலாம்.">
+
+                <p
+                    data-en="End a chat, find someone new, or use the report and block options."
+                    data-ta="உரையாடலை முடிக்கலாம், புதிய நபரைத் தேடலாம் அல்லது புகார் மற்றும் தடை விருப்பங்களைப் பயன்படுத்தலாம்.">
                     End a chat, find someone new, or use the report and block options.
                 </p>
+
             </div>
 
         </aside>
@@ -177,27 +273,11 @@
 
 </div>
 
+<!-- SOCKET.IO -->
 <script src="/socket.io/socket.io.js"></script>
+
+<!-- MAIN JAVASCRIPT -->
 <script src="script.js"></script>
-
-<!-- Translate the new homepage content when the language changes -->
-<script>
-(function () {
-    const languageSelect = document.getElementById("language");
-    const translatedElements = document.querySelectorAll("[data-en][data-ta]");
-
-    function updateHomepageLanguage() {
-        const language = languageSelect.value === "ta" ? "ta" : "en";
-
-        translatedElements.forEach(function (element) {
-            element.textContent = element.getAttribute("data-" + language);
-        });
-    }
-
-    languageSelect.addEventListener("change", updateHomepageLanguage);
-    updateHomepageLanguage();
-})();
-</script>
 
 </body>
 </html>

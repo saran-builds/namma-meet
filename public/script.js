@@ -1,9 +1,9 @@
 
 const socket = io();
 
-// ================================
+// =====================================
 // HTML ELEMENTS
-// ================================
+// =====================================
 
 const languageSelect = document.getElementById("language");
 const statusText = document.getElementById("status");
@@ -16,18 +16,23 @@ const sendBtn = document.getElementById("sendBtn");
 
 const localVideo = document.getElementById("localVideo");
 const remoteVideo = document.getElementById("remoteVideo");
+const youLabel = document.getElementById("youLabel");
+
+const cameraToggleBtn = document.getElementById("cameraToggleBtn");
+const micToggleBtn = document.getElementById("micToggleBtn");
 
 const endChatBtn = document.getElementById("endChatBtn");
 const reportBtn = document.getElementById("reportBtn");
 const blockBtn = document.getElementById("blockBtn");
 
-// ================================
+// =====================================
 // CONNECTION VARIABLES
-// ================================
+// =====================================
 
 let isMatched = false;
 let isSearching = false;
 let isInitiator = false;
+
 let partnerVideoReady = false;
 let offerCreated = false;
 let isVideoConnected = false;
@@ -38,9 +43,16 @@ let remoteStream = null;
 
 let pendingCandidates = [];
 
-// ================================
-// LANGUAGE TRANSLATIONS
-// ================================
+let reconnectTimer = null;
+let connectionFailureTimer = null;
+
+let iceRestartAttempts = 0;
+
+const MAX_ICE_RESTARTS = 2;
+
+// =====================================
+// TRANSLATIONS
+// =====================================
 
 const translations = {
     en: {
@@ -48,25 +60,41 @@ const translations = {
         language: "Language:",
         you: "You",
         stranger: "Stranger",
+        cameraOffLabel: "Camera Off",
+
         chatTitle: "Text Chat",
-        welcome: "Welcome to ❤️MEETON! Click Start to connect with a stranger.",
+        welcome: "Welcome to MEETON! Click Start to connect with a stranger.",
+
         start: "Start",
         next: "Next Stranger",
         send: "Send",
+
         endChat: "End Chat",
         report: "Report User",
         block: "Block User",
+
+        cameraOn: "Turn Camera On",
+        cameraOff: "Turn Camera Off",
+        micOn: "Unmute Mic",
+        micOff: "Mute Microphone",
+
         placeholder: "Type your message...",
+
         find: "Click Start to find a stranger.",
         cameraStarting: "Opening your camera and microphone...",
         waiting: "Your camera is on. Searching for a stranger...",
         connecting: "Stranger found! Connecting video and audio...",
         connected: "Video connected! You can now chat.",
+
+        reconnecting: "Connection interrupted. Trying to reconnect...",
+
         disconnected: "Stranger disconnected. Your camera remains on. Click Start to find another.",
         ended: "You ended the chat.",
         blocked: "User blocked. Click Start to find another stranger.",
+
         cameraError: "Please allow camera and microphone access.",
-        videoFailed: "Video connection failed. Please try another stranger."
+        videoFailed: "Video connection failed. Click Next Stranger to try again.",
+        socketDisconnected: "Server connection lost. Please check your internet connection."
     },
 
     ta: {
@@ -74,36 +102,62 @@ const translations = {
         language: "மொழி:",
         you: "நீங்கள்",
         stranger: "அந்நியர்",
+        cameraOffLabel: "கேமரா நிறுத்தப்பட்டுள்ளது",
+
         chatTitle: "குறுஞ்செய்தி அரட்டை",
         welcome: "MEETON-க்கு வரவேற்கிறோம்! ஒருவருடன் இணைய Start அழுத்தவும்.",
+
         start: "தொடங்கு",
         next: "அடுத்த நபர்",
         send: "அனுப்பு",
+
         endChat: "அரட்டையை முடி",
         report: "புகார் செய்",
         block: "தடை செய்",
+
+        cameraOn: "கேமராவை இயக்கு",
+        cameraOff: "கேமராவை நிறுத்து",
+        micOn: "மைக்ரோஃபோனை இயக்கு",
+        micOff: "மைக்ரோஃபோனை நிறுத்து",
+
         placeholder: "உங்கள் செய்தியை எழுதுங்கள்...",
+
         find: "ஒருவரைத் தேட Start அழுத்தவும்.",
         cameraStarting: "கேமரா மற்றும் மைக்ரோஃபோன் திறக்கப்படுகிறது...",
         waiting: "கேமரா இயக்கத்தில் உள்ளது. ஒருவரைத் தேடுகிறோம்...",
         connecting: "நபர் கிடைத்தார்! வீடியோ இணைக்கப்படுகிறது...",
         connected: "வீடியோ இணைக்கப்பட்டது! இப்போது அரட்டை செய்யலாம்.",
+
+        reconnecting: "இணைப்பு துண்டிக்கப்பட்டது. மீண்டும் இணைக்க முயற்சிக்கிறோம்...",
+
         disconnected: "மற்றவர் வெளியேறிவிட்டார். உங்கள் கேமரா இயக்கத்தில் உள்ளது. புதிய நபரைத் தேட Start அழுத்தவும்.",
         ended: "நீங்கள் அரட்டையை முடித்துவிட்டீர்கள்.",
         blocked: "பயனர் தடுக்கப்பட்டார். புதிய நபரைத் தேடுங்கள்.",
+
         cameraError: "கேமரா மற்றும் மைக்ரோஃபோன் அனுமதி வழங்கவும்.",
-        videoFailed: "வீடியோ இணைப்பு தோல்வியடைந்தது. மீண்டும் முயற்சிக்கவும்."
+        videoFailed: "வீடியோ இணைப்பு தோல்வியடைந்தது. மீண்டும் முயற்சிக்கவும்.",
+        socketDisconnected: "சர்வர் இணைப்பு துண்டிக்கப்பட்டது. இணைய இணைப்பைச் சரிபார்க்கவும்."
     }
 };
 
 let currentLanguage = "en";
 
 function t(key) {
-    return translations[currentLanguage][key];
+    return translations[currentLanguage][key] || key;
 }
 
+function setStatus(key) {
+    statusText.textContent = t(key);
+}
+
+// =====================================
+// LANGUAGE UPDATE
+// =====================================
+
 function updateLanguage() {
-    currentLanguage = languageSelect.value;
+    currentLanguage = languageSelect.value === "ta" ? "ta" : "en";
+
+    document.documentElement.lang = currentLanguage;
 
     document.getElementById("subtitle").textContent = t("subtitle");
     document.getElementById("languageLabel").textContent = t("language");
@@ -115,23 +169,34 @@ function updateLanguage() {
     startBtn.textContent = t("start");
     nextBtn.textContent = t("next");
     sendBtn.textContent = t("send");
+
     endChatBtn.textContent = t("endChat");
     reportBtn.textContent = t("report");
     blockBtn.textContent = t("block");
 
     messageInput.placeholder = t("placeholder");
+
+    // Translate homepage headings and feature cards.
+    document.querySelectorAll("[data-en][data-ta]").forEach(element => {
+        element.textContent = element.getAttribute("data-" + currentLanguage);
+    });
+
+    updateMediaButtons();
 }
 
 languageSelect.addEventListener("change", updateLanguage);
 
-// ================================
+// =====================================
 // INTERFACE CONTROLS
-// ================================
+// =====================================
 
 function setChatEnabled(enabled) {
-    messageInput.disabled = !enabled;
-    sendBtn.disabled = !enabled;
-    isVideoConnected = enabled;
+    const canChat = Boolean(enabled && isMatched);
+
+    messageInput.disabled = !canChat;
+    sendBtn.disabled = !canChat;
+
+    isVideoConnected = canChat;
 }
 
 function setSafetyEnabled(enabled) {
@@ -140,8 +205,13 @@ function setSafetyEnabled(enabled) {
     blockBtn.disabled = !enabled;
 }
 
+function clearChat() {
+    chatBox.innerHTML = "";
+}
+
 function showMessage(message, sender) {
     const messageElement = document.createElement("div");
+
     messageElement.classList.add("message");
 
     if (sender === "You") {
@@ -151,7 +221,9 @@ function showMessage(message, sender) {
     }
 
     const senderElement = document.createElement("strong");
-    senderElement.textContent = sender + ": ";
+
+    senderElement.textContent =
+        (sender === "You" ? t("you") : t("stranger")) + ": ";
 
     const textElement = document.createElement("span");
     textElement.textContent = message;
@@ -160,21 +232,160 @@ function showMessage(message, sender) {
     messageElement.appendChild(textElement);
 
     chatBox.appendChild(messageElement);
+
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function clearChat() {
-    chatBox.innerHTML = "";
+// =====================================
+// SVG ICONS
+// =====================================
+
+const icons = {
+    cameraOn: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="6" width="13" height="12" rx="2"></rect>
+            <path d="m16 10 5-3v10l-5-3z"></path>
+        </svg>
+    `,
+
+    cameraOff: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="6" width="13" height="12" rx="2"></rect>
+            <path d="m16 10 5-3v10l-5-3z"></path>
+            <path d="M2 2 22 22"></path>
+        </svg>
+    `,
+
+    micOn: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+            <path d="M5 10a7 7 0 0 0 14 0"></path>
+            <path d="M12 19v3"></path>
+            <path d="M8 22h8"></path>
+        </svg>
+    `,
+
+    micOff: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+            <path d="M5 10a7 7 0 0 0 14 0"></path>
+            <path d="M12 19v3"></path>
+            <path d="M8 22h8"></path>
+            <path d="M2 2 22 22"></path>
+        </svg>
+    `
+};
+
+// =====================================
+// CAMERA AND MICROPHONE ICON UPDATE
+// =====================================
+
+function updateMediaButtons() {
+    const videoTrack = localStream
+        ? localStream.getVideoTracks().find(
+            track => track.readyState === "live"
+        )
+        : null;
+
+    const audioTrack = localStream
+        ? localStream.getAudioTracks().find(
+            track => track.readyState === "live"
+        )
+        : null;
+
+    const cameraIsOn = Boolean(
+        videoTrack && videoTrack.enabled
+    );
+
+    const microphoneIsOn = Boolean(
+        audioTrack && audioTrack.enabled
+    );
+
+    // Enable controls only when usable tracks exist.
+    cameraToggleBtn.disabled = !videoTrack;
+    micToggleBtn.disabled = !audioTrack;
+
+    // CAMERA BUTTON
+    cameraToggleBtn.innerHTML = cameraIsOn
+        ? icons.cameraOn
+        : icons.cameraOff;
+
+    cameraToggleBtn.title = t(
+        cameraIsOn ? "cameraOff" : "cameraOn"
+    );
+
+    cameraToggleBtn.setAttribute(
+        "aria-label",
+        cameraToggleBtn.title
+    );
+
+    // Pressed means that the camera is OFF.
+    cameraToggleBtn.setAttribute(
+        "aria-pressed",
+        String(!cameraIsOn)
+    );
+
+    cameraToggleBtn.classList.toggle(
+        "is-off",
+        Boolean(videoTrack && !cameraIsOn)
+    );
+
+    // MICROPHONE BUTTON
+    micToggleBtn.innerHTML = microphoneIsOn
+        ? icons.micOn
+        : icons.micOff;
+
+    micToggleBtn.title = t(
+        microphoneIsOn ? "micOff" : "micOn"
+    );
+
+    micToggleBtn.setAttribute(
+        "aria-label",
+        micToggleBtn.title
+    );
+
+    // Pressed means that the microphone is muted.
+    micToggleBtn.setAttribute(
+        "aria-pressed",
+        String(Boolean(audioTrack && !microphoneIsOn))
+    );
+
+    micToggleBtn.classList.toggle(
+        "is-off",
+        Boolean(audioTrack && !microphoneIsOn)
+    );
+
+    // Update local video label.
+    youLabel.textContent = cameraIsOn
+        ? t("you")
+        : (videoTrack ? t("cameraOffLabel") : t("you"));
 }
 
-// ================================
+// =====================================
 // CAMERA AND MICROPHONE
-// ================================
+// =====================================
 
 async function startVideo() {
-    // Reuse camera if it is already active.
-    if (localStream) {
+    // Reuse already active local media.
+    if (
+        localStream &&
+        localStream.getTracks().some(
+            track => track.readyState === "live"
+        )
+    ) {
+        localVideo.srcObject = localStream;
+
+        updateMediaButtons();
         return;
+    }
+
+    stopLocalCamera();
+
+    if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+    ) {
+        throw new Error("Camera access requires HTTPS or localhost.");
     }
 
     localStream = await navigator.mediaDevices.getUserMedia({
@@ -183,7 +394,14 @@ async function startVideo() {
     });
 
     localVideo.srcObject = localStream;
-    await localVideo.play();
+
+    try {
+        await localVideo.play();
+    } catch (error) {
+        console.warn("Local video playback:", error);
+    }
+
+    updateMediaButtons();
 
     console.log("Camera and microphone started.");
 }
@@ -195,26 +413,259 @@ function stopLocalCamera() {
     }
 
     localVideo.srcObject = null;
+
+    updateMediaButtons();
 }
 
-// ================================
-// WEBRTC CONNECTION
-// ================================
+// =====================================
+// CAMERA ON / OFF
+// =====================================
+
+cameraToggleBtn.addEventListener("click", () => {
+    if (!localStream) return;
+
+    const videoTrack = localStream
+        .getVideoTracks()
+        .find(track => track.readyState === "live");
+
+    if (!videoTrack) return;
+
+    videoTrack.enabled = !videoTrack.enabled;
+
+    updateMediaButtons();
+
+    console.log("Camera enabled:", videoTrack.enabled);
+});
+
+// =====================================
+// MICROPHONE MUTE / UNMUTE
+// =====================================
+
+micToggleBtn.addEventListener("click", () => {
+    if (!localStream) return;
+
+    const audioTrack = localStream
+        .getAudioTracks()
+        .find(track => track.readyState === "live");
+
+    if (!audioTrack) return;
+
+    audioTrack.enabled = !audioTrack.enabled;
+
+    updateMediaButtons();
+
+    console.log("Microphone enabled:", audioTrack.enabled);
+});
+
+// =====================================
+// WEBRTC CONFIGURATION
+// =====================================
 
 const rtcConfiguration = {
     iceServers: [
         {
             urls: "stun:stun.l.google.com:19302"
+        },
+        {
+            urls: "stun:stun1.l.google.com:19302"
         }
     ]
 };
+
+// =====================================
+// CONNECTION TIMER HELPERS
+// =====================================
+
+function clearConnectionTimers() {
+    if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+    }
+
+    if (connectionFailureTimer) {
+        clearTimeout(connectionFailureTimer);
+        connectionFailureTimer = null;
+    }
+}
+
+function scheduleConnectionFailure(pc) {
+    if (connectionFailureTimer) return;
+
+    connectionFailureTimer = setTimeout(() => {
+        connectionFailureTimer = null;
+
+        if (peerConnection !== pc || !isMatched) return;
+
+        const state = pc.iceConnectionState;
+
+        if (state !== "connected" && state !== "completed") {
+            setChatEnabled(false);
+            setStatus("videoFailed");
+        }
+    }, 15000);
+}
+
+// =====================================
+// ICE RECONNECTION
+// =====================================
+
+async function restartIceConnection(pc) {
+    if (
+        !isMatched ||
+        peerConnection !== pc ||
+        !isInitiator ||
+        iceRestartAttempts >= MAX_ICE_RESTARTS
+    ) {
+        return;
+    }
+
+    if (pc.signalingState !== "stable") {
+        if (!reconnectTimer) {
+            reconnectTimer = setTimeout(() => {
+                reconnectTimer = null;
+
+                if (
+                    peerConnection === pc &&
+                    pc.signalingState === "stable"
+                ) {
+                    restartIceConnection(pc);
+                }
+            }, 1500);
+        }
+
+        return;
+    }
+
+    iceRestartAttempts++;
+
+    try {
+        setStatus("reconnecting");
+
+        console.log(
+            "Attempting ICE reconnection:",
+            iceRestartAttempts
+        );
+
+        const offer = await pc.createOffer({
+            iceRestart: true
+        });
+
+        if (peerConnection !== pc || !isMatched) return;
+
+        await pc.setLocalDescription(offer);
+
+        socket.emit("video-offer", pc.localDescription);
+
+    } catch (error) {
+        console.error("ICE restart error:", error);
+    }
+}
+
+// =====================================
+// ICE CONNECTION STATE
+// =====================================
+
+function handleIceConnectionState(pc) {
+    if (peerConnection !== pc || !isMatched) return;
+
+    const state = pc.iceConnectionState;
+
+    console.log("ICE connection state:", state);
+
+    if (state === "connected" || state === "completed") {
+        clearConnectionTimers();
+
+        iceRestartAttempts = 0;
+
+        setChatEnabled(true);
+        setStatus("connected");
+
+        return;
+    }
+
+    if (state === "checking") {
+        setChatEnabled(false);
+        setStatus("connecting");
+
+        scheduleConnectionFailure(pc);
+
+        return;
+    }
+
+    if (state === "disconnected") {
+        setChatEnabled(false);
+        setStatus("reconnecting");
+
+        scheduleConnectionFailure(pc);
+
+        if (isInitiator && !reconnectTimer) {
+            reconnectTimer = setTimeout(() => {
+                reconnectTimer = null;
+
+                if (
+                    peerConnection === pc &&
+                    pc.iceConnectionState === "disconnected"
+                ) {
+                    restartIceConnection(pc);
+                }
+            }, 4000);
+        }
+
+        return;
+    }
+
+    if (state === "failed") {
+        setChatEnabled(false);
+        setStatus("reconnecting");
+
+        scheduleConnectionFailure(pc);
+
+        if (isInitiator) {
+            restartIceConnection(pc);
+        }
+    }
+}
+
+// =====================================
+// PENDING ICE CANDIDATES
+// =====================================
+
+async function flushPendingCandidates(pc) {
+    if (
+        peerConnection !== pc ||
+        !pc.remoteDescription
+    ) {
+        return;
+    }
+
+    const candidates = pendingCandidates.splice(0);
+
+    for (const candidate of candidates) {
+        try {
+            await pc.addIceCandidate(
+                new RTCIceCandidate(candidate)
+            );
+        } catch (error) {
+            console.error("Pending ICE candidate error:", error);
+        }
+    }
+}
+
+// =====================================
+// CREATE PEER CONNECTION
+// =====================================
 
 function createPeerConnection() {
     if (peerConnection) {
         return peerConnection;
     }
 
+    if (!localStream) {
+        throw new Error("Local camera is not available.");
+    }
+
     const pc = new RTCPeerConnection(rtcConfiguration);
+
     peerConnection = pc;
 
     remoteStream = new MediaStream();
@@ -225,9 +676,14 @@ function createPeerConnection() {
         pc.addTrack(track, localStream);
     });
 
-    // Receive stranger's media.
+    // Receive stranger media.
     pc.ontrack = event => {
-        event.streams[0].getTracks().forEach(track => {
+        const incomingTracks =
+            event.streams && event.streams.length > 0
+                ? event.streams[0].getTracks()
+                : [event.track];
+
+        incomingTracks.forEach(track => {
             const alreadyAdded = remoteStream
                 .getTracks()
                 .some(existingTrack => existingTrack.id === track.id);
@@ -238,47 +694,49 @@ function createPeerConnection() {
         });
 
         remoteVideo.play().catch(error => {
-            console.log("Remote video playback error:", error);
+            console.log("Remote video playback:", error);
         });
     };
 
     // Send ICE candidates.
     pc.onicecandidate = event => {
-        if (event.candidate && isMatched) {
-            socket.emit("video-candidate", event.candidate);
+        if (
+            event.candidate &&
+            isMatched &&
+            peerConnection === pc
+        ) {
+            socket.emit(
+                "video-candidate",
+                event.candidate.toJSON()
+            );
         }
     };
 
-    // Check video connection status.
+    // Monitor ICE connection.
+    pc.oniceconnectionstatechange = () => {
+        handleIceConnectionState(pc);
+    };
+
     pc.onconnectionstatechange = () => {
-        if (peerConnection !== pc) return;
-
-        console.log("Connection:", pc.connectionState);
-
-        if (pc.connectionState === "connected" && isMatched) {
-            setChatEnabled(true);
-            statusText.textContent = t("connected");
-        }
-
-        if (
-            pc.connectionState === "failed" ||
-            pc.connectionState === "disconnected"
-        ) {
-            setChatEnabled(false);
-            statusText.textContent = t("videoFailed");
-        }
-
-        if (pc.connectionState === "closed") {
-            setChatEnabled(false);
-        }
+        console.log(
+            "WebRTC connection state:",
+            pc.connectionState
+        );
     };
 
     return pc;
 }
 
+// =====================================
+// CLOSE PEER CONNECTION
+// =====================================
+
 function closePeerConnection() {
+    clearConnectionTimers();
+
     if (peerConnection) {
         peerConnection.onconnectionstatechange = null;
+        peerConnection.oniceconnectionstatechange = null;
         peerConnection.onicecandidate = null;
         peerConnection.ontrack = null;
 
@@ -293,13 +751,14 @@ function closePeerConnection() {
 
     partnerVideoReady = false;
     offerCreated = false;
+    iceRestartAttempts = 0;
 
     setChatEnabled(false);
 }
 
-// ================================
+// =====================================
 // CREATE VIDEO OFFER
-// ================================
+// =====================================
 
 async function maybeCreateOffer() {
     if (
@@ -313,14 +772,18 @@ async function maybeCreateOffer() {
         return;
     }
 
+    const pc = peerConnection;
+
     try {
         offerCreated = true;
 
-        const offer = await peerConnection.createOffer();
+        const offer = await pc.createOffer();
 
-        await peerConnection.setLocalDescription(offer);
+        if (peerConnection !== pc || !isMatched) return;
 
-        socket.emit("video-offer", offer);
+        await pc.setLocalDescription(offer);
+
+        socket.emit("video-offer", pc.localDescription);
 
     } catch (error) {
         offerCreated = false;
@@ -328,25 +791,32 @@ async function maybeCreateOffer() {
     }
 }
 
-// ================================
+// =====================================
 // START BUTTON
-// ================================
+// =====================================
 
 startBtn.addEventListener("click", async () => {
     if (isSearching || isMatched) return;
 
     startBtn.disabled = true;
 
-    statusText.textContent = t("cameraStarting");
+    setStatus("cameraStarting");
 
     try {
-        // Camera opens immediately when Start is clicked.
+        // Open camera immediately.
         await startVideo();
+
+        if (!socket.connected) {
+            startBtn.disabled = false;
+            setStatus("socketDisconnected");
+            return;
+        }
 
         clearChat();
 
         isSearching = true;
-        statusText.textContent = t("waiting");
+
+        setStatus("waiting");
 
         socket.emit("start-chat");
 
@@ -356,20 +826,27 @@ startBtn.addEventListener("click", async () => {
         stopLocalCamera();
 
         startBtn.disabled = false;
-        statusText.textContent = t("find");
+
+        setStatus("cameraError");
 
         alert(t("cameraError"));
     }
 });
 
-// ================================
-// MATCH FOUND
-// ================================
+// =====================================
+// WAITING
+// =====================================
 
 socket.on("waiting", () => {
+    if (!isSearching) return;
+
     isSearching = true;
-    statusText.textContent = t("waiting");
+    setStatus("waiting");
 });
+
+// =====================================
+// MATCH FOUND
+// =====================================
 
 socket.on("matched", async data => {
     isMatched = true;
@@ -384,11 +861,13 @@ socket.on("matched", async data => {
     setSafetyEnabled(true);
 
     clearChat();
+    clearConnectionTimers();
 
-    statusText.textContent = t("connecting");
+    iceRestartAttempts = 0;
+
+    setStatus("connecting");
 
     try {
-        // Camera should already be running.
         if (!localStream) {
             await startVideo();
         }
@@ -407,13 +886,13 @@ socket.on("matched", async data => {
         socket.emit("end-chat");
 
         resetChat(true);
-        statusText.textContent = t("cameraError");
+        setStatus("cameraError");
     }
 });
 
-// ================================
+// =====================================
 // PARTNER VIDEO READY
-// ================================
+// =====================================
 
 socket.on("partner-video-ready", async () => {
     if (!isMatched) return;
@@ -423,85 +902,97 @@ socket.on("partner-video-ready", async () => {
     await maybeCreateOffer();
 });
 
-// ================================
-// RECEIVE OFFER
-// ================================
+// =====================================
+// RECEIVE VIDEO OFFER
+// =====================================
 
 socket.on("video-offer", async offer => {
-    if (!isMatched || !peerConnection) return;
+    if (!isMatched) return;
 
     try {
-        await peerConnection.setRemoteDescription(
+        const pc = peerConnection || createPeerConnection();
+
+        if (pc.signalingState !== "stable") {
+            console.warn(
+                "Offer received while negotiation is busy:",
+                pc.signalingState
+            );
+            return;
+        }
+
+        await pc.setRemoteDescription(
             new RTCSessionDescription(offer)
         );
 
-        const answer = await peerConnection.createAnswer();
+        await flushPendingCandidates(pc);
 
-        await peerConnection.setLocalDescription(answer);
+        const answer = await pc.createAnswer();
 
-        socket.emit("video-answer", answer);
+        if (peerConnection !== pc || !isMatched) return;
 
-        for (const candidate of pendingCandidates) {
-            await peerConnection.addIceCandidate(
-                new RTCIceCandidate(candidate)
-            );
-        }
+        await pc.setLocalDescription(answer);
 
-        pendingCandidates = [];
+        socket.emit("video-answer", pc.localDescription);
 
     } catch (error) {
         console.error("Offer handling error:", error);
     }
 });
 
-// ================================
-// RECEIVE ANSWER
-// ================================
+// =====================================
+// RECEIVE VIDEO ANSWER
+// =====================================
 
 socket.on("video-answer", async answer => {
-    if (!peerConnection || !isMatched) return;
+    const pc = peerConnection;
+
+    if (
+        !pc ||
+        !isMatched ||
+        pc.signalingState !== "have-local-offer"
+    ) {
+        return;
+    }
 
     try {
-        await peerConnection.setRemoteDescription(
+        await pc.setRemoteDescription(
             new RTCSessionDescription(answer)
         );
 
-        for (const candidate of pendingCandidates) {
-            await peerConnection.addIceCandidate(
-                new RTCIceCandidate(candidate)
-            );
-        }
-
-        pendingCandidates = [];
+        await flushPendingCandidates(pc);
 
     } catch (error) {
         console.error("Answer handling error:", error);
     }
 });
 
-// ================================
+// =====================================
 // RECEIVE ICE CANDIDATES
-// ================================
+// =====================================
 
 socket.on("video-candidate", async candidate => {
     if (!isMatched) return;
 
     try {
-        if (peerConnection && peerConnection.remoteDescription) {
+        if (
+            peerConnection &&
+            peerConnection.remoteDescription
+        ) {
             await peerConnection.addIceCandidate(
                 new RTCIceCandidate(candidate)
             );
         } else {
             pendingCandidates.push(candidate);
         }
+
     } catch (error) {
-        console.error("Candidate error:", error);
+        console.error("ICE candidate error:", error);
     }
 });
 
-// ================================
+// =====================================
 // TEXT CHAT
-// ================================
+// =====================================
 
 function sendMessage() {
     const message = messageInput.value.trim();
@@ -510,9 +1001,14 @@ function sendMessage() {
         !isMatched ||
         !isVideoConnected ||
         !peerConnection ||
-        peerConnection.connectionState !== "connected" ||
         !message
     ) {
+        return;
+    }
+
+    const iceState = peerConnection.iceConnectionState;
+
+    if (iceState !== "connected" && iceState !== "completed") {
         return;
     }
 
@@ -538,20 +1034,21 @@ socket.on("chat-message", message => {
     showMessage(message, "Stranger");
 });
 
-// ================================
+// =====================================
 // RESET CHAT
-// ================================
+// =====================================
 
 function resetChat(stopCamera = false) {
     isMatched = false;
     isSearching = false;
     isInitiator = false;
+
     partnerVideoReady = false;
     offerCreated = false;
 
     closePeerConnection();
 
-    // Stop camera only when explicitly requested.
+    // Stop local media only when requested.
     if (stopCamera) {
         stopLocalCamera();
     }
@@ -563,33 +1060,35 @@ function resetChat(stopCamera = false) {
     nextBtn.disabled = true;
 
     messageInput.value = "";
+
+    updateMediaButtons();
 }
 
-// ================================
+// =====================================
 // NEXT STRANGER
-// CAMERA REMAINS ON FOR BOTH USERS
-// ================================
+// KEEP LOCAL CAMERA ON
+// =====================================
 
 nextBtn.addEventListener("click", () => {
-    if (!isMatched && !isSearching) return;
+    if (!isMatched) return;
 
-    // Close old video connection, but do not stop camera.
     resetChat(false);
 
     clearChat();
 
     isSearching = true;
+
     startBtn.disabled = true;
 
-    statusText.textContent = t("waiting");
+    setStatus("waiting");
 
     socket.emit("next-stranger");
 });
 
-// ================================
+// =====================================
 // END CHAT
-// CAMERA OFF
-// ================================
+// TURN LOCAL CAMERA AND MIC OFF
+// =====================================
 
 endChatBtn.addEventListener("click", () => {
     if (!isMatched) return;
@@ -598,36 +1097,35 @@ endChatBtn.addEventListener("click", () => {
 
     resetChat(true);
 
-    statusText.textContent = t("ended");
+    setStatus("ended");
 });
 
-// ================================
+// =====================================
 // PARTNER LEFT
-// IMPORTANT: CAMERA STAYS ON
-// ================================
+// KEEP OUR CAMERA ON
+// =====================================
 
 socket.on("partner-left", () => {
-    // false means keep camera and microphone running.
     resetChat(false);
 
     clearChat();
 
-    statusText.textContent = t("disconnected");
+    setStatus("disconnected");
 });
 
-// ================================
+// =====================================
 // CHAT ENDED
-// ================================
+// =====================================
 
 socket.on("chat-ended", () => {
     resetChat(true);
 
-    statusText.textContent = t("ended");
+    setStatus("ended");
 });
 
-// ================================
+// =====================================
 // REPORT USER
-// ================================
+// =====================================
 
 reportBtn.addEventListener("click", () => {
     if (!isMatched) return;
@@ -664,9 +1162,9 @@ socket.on("report-received", () => {
     alert("Thank you. Your report has been received.");
 });
 
-// ================================
+// =====================================
 // BLOCK USER
-// ================================
+// =====================================
 
 blockBtn.addEventListener("click", () => {
     if (!isMatched) return;
@@ -681,24 +1179,44 @@ blockBtn.addEventListener("click", () => {
 
     resetChat(true);
 
-    statusText.textContent = t("blocked");
+    setStatus("blocked");
 });
 
 socket.on("block-confirmed", () => {
     alert("User blocked successfully.");
 });
 
+// If the stranger blocks us, keep our own camera active.
 socket.on("partner-blocked", () => {
-    resetChat(true);
+    resetChat(false);
 
     clearChat();
 
-    statusText.textContent = t("disconnected");
+    setStatus("disconnected");
 });
 
-// ================================
+// =====================================
+// SOCKET CONNECTION STATUS
+// =====================================
+
+socket.on("disconnect", () => {
+    if (isMatched || isSearching) {
+        resetChat(false);
+        clearChat();
+    }
+
+    setStatus("socketDisconnected");
+});
+
+socket.on("connect", () => {
+    if (!isMatched && !isSearching) {
+        setStatus("find");
+    }
+});
+
+// =====================================
 // INITIAL SETTINGS
-// ================================
+// =====================================
 
 setChatEnabled(false);
 setSafetyEnabled(false);
@@ -707,3 +1225,6 @@ startBtn.disabled = false;
 nextBtn.disabled = true;
 
 updateLanguage();
+updateMediaButtons();
+
+setStatus("find");
