@@ -4,36 +4,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <meta name="theme-color" content="#101020">
     <meta name="description" content="Meet new people through random text and video chats on MEETON.">
+
     <title>MEETON - Meet New People</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="app">
 
-    <!-- HEADER -->
+    <!-- =================================
+         HEADER
+    ================================== -->
+
     <header class="header">
+
         <div class="brand-area">
+
             <div class="brand-mark" aria-hidden="true">M</div>
+
             <div>
                 <h1>MEETON</h1>
                 <p id="subtitle">Meet and chat with strangers</p>
             </div>
+
         </div>
 
         <div class="header-actions">
-            <label id="languageLabel" for="language">Language:</label>
+
+            <label id="languageLabel" for="language">
+                Language:
+            </label>
+
             <select id="language">
                 <option value="en">English</option>
                 <option value="ta">தமிழ்</option>
             </select>
+
         </div>
+
     </header>
 
-    <!-- WELCOME BANNER -->
+
+    <!-- =================================
+         WELCOME BANNER
+    ================================== -->
+
     <section class="hero-section" aria-labelledby="heroHeading">
+
         <div class="hero-content">
 
             <p class="hero-eyebrow"
@@ -61,26 +82,46 @@
             </div>
 
         </div>
+
     </section>
 
-    <!-- MAIN CONTENT -->
+
+    <!-- =================================
+         MAIN CONTENT
+    ================================== -->
+
     <main class="main-layout">
 
-        <!-- VIDEO SECTION -->
+
+        <!-- =================================
+             VIDEO SECTION
+        ================================== -->
+
         <section class="video-section">
 
             <h2 data-en="Video Chat" data-ta="வீடியோ அரட்டை">
                 Video Chat
             </h2>
 
-            <!-- YOUR CAMERA -->
+
+            <!-- =================================
+                 YOUR CAMERA
+            ================================== -->
+
             <div class="video-box local-video-box">
 
-                <video id="localVideo" autoplay muted playsinline></video>
+                <video
+                    id="localVideo"
+                    autoplay
+                    muted
+                    playsinline>
+                </video>
 
                 <p id="youLabel">You</p>
 
-                <!-- CAMERA AND MICROPHONE ICONS -->
+
+                <!-- CAMERA AND MICROPHONE CONTROLS -->
+
                 <div class="video-overlay-controls">
 
                     <button
@@ -107,23 +148,105 @@
 
             </div>
 
-            <!-- STRANGER CAMERA -->
+
+            <!-- =================================
+                 STRANGER CAMERA
+                 SEARCH ANIMATION IS INSIDE HERE
+            ================================== -->
+
             <div class="video-box remote-video-box">
 
-                <video id="remoteVideo" autoplay playsinline></video>
+                <!-- Stranger's actual video -->
+
+                <video
+                    id="remoteVideo"
+                    autoplay
+                    playsinline>
+                </video>
 
                 <p id="strangerLabel">Stranger</p>
 
+
+                <!-- =================================
+                     STRANGER SEARCH PANEL
+                ================================== -->
+
+                <div
+                    id="searchPanel"
+                    class="search-panel"
+                    hidden
+                    aria-live="polite"
+                    aria-label="Stranger search">
+
+                    <!-- ANIMATED SEARCH ICON -->
+
+                    <div class="search-animation">
+
+                        <div class="search-ring ring-one"></div>
+
+                        <div class="search-ring ring-two"></div>
+
+                        <div class="search-icon" aria-hidden="true">
+                            <span>👥</span>
+                        </div>
+
+                    </div>
+
+
+                    <!-- SEARCH INFORMATION -->
+
+                    <div class="search-info">
+
+                        <h3 id="searchTitle">
+                            Finding someone for you...
+                        </h3>
+
+                        <p id="searchDescription">
+                            Searching for a stranger to connect with.
+                        </p>
+
+                    </div>
+
+
+                    <!-- ANIMATED SEARCHING DOTS -->
+
+                    <div class="search-dots" aria-hidden="true">
+
+                        <span></span>
+                        <span></span>
+                        <span></span>
+
+                    </div>
+
+
+                    <!-- CANCEL SEARCH BUTTON -->
+
+                    <button
+                        type="button"
+                        id="cancelSearchBtn"
+                        class="cancel-search-btn">
+                        Cancel Search
+                    </button>
+
+                </div>
+
             </div>
 
-            <!-- START AND NEXT BUTTONS -->
+
+            <!-- =================================
+                 START AND NEXT BUTTONS
+            ================================== -->
+
             <div class="video-controls">
 
                 <button type="button" id="startBtn">
                     Start
                 </button>
 
-                <button type="button" id="nextBtn" disabled>
+                <button
+                    type="button"
+                    id="nextBtn"
+                    disabled>
                     Next Stranger
                 </button>
 
@@ -131,7 +254,12 @@
 
         </section>
 
-        <!-- TEXT CHAT SECTION -->
+
+
+        <!-- =================================
+             TEXT CHAT SECTION
+        ================================== -->
+
         <section class="chat-section">
 
             <h2 id="chatTitle">Text Chat</h2>
@@ -140,7 +268,9 @@
                 Click Start to find a stranger.
             </p>
 
+
             <!-- CHAT MESSAGES -->
+
             <div id="chatBox">
 
                 <p id="welcomeMessage">
@@ -149,7 +279,9 @@
 
             </div>
 
+
             <!-- MESSAGE INPUT -->
+
             <div class="message-area">
 
                 <input
@@ -169,7 +301,9 @@
 
             </div>
 
+
             <!-- SAFETY BUTTONS -->
+
             <div class="safety-buttons">
 
                 <button
@@ -197,14 +331,23 @@
 
         </section>
 
-        <!-- FEATURE SECTION -->
+
+
+        <!-- =================================
+             FEATURE SECTION
+        ================================== -->
+
         <aside class="empty-section features-section">
 
-            <h2 data-en="Why MEETON?" data-ta="ஏன் MEETON?">
+            <h2
+                data-en="Why MEETON?"
+                data-ta="ஏன் MEETON?">
                 Why MEETON?
             </h2>
 
+
             <!-- FEATURE 1 -->
+
             <div class="feature-card">
 
                 <div class="feature-icon">💬</div>
@@ -223,7 +366,9 @@
 
             </div>
 
+
             <!-- FEATURE 2 -->
+
             <div class="feature-card">
 
                 <div class="feature-icon">📹</div>
@@ -242,7 +387,9 @@
 
             </div>
 
+
             <!-- FEATURE 3 -->
+
             <div class="feature-card">
 
                 <div class="feature-icon">🛡️</div>
@@ -265,18 +412,36 @@
 
     </main>
 
-    <!-- FOOTER -->
+
+
+    <!-- =================================
+         FOOTER
+    ================================== -->
+
     <footer>
+
         <p>Connect. Chat. Make Friends.</p>
-        <p class="footer-brand">Made with ❤️ MEETON</p>
+
+        <p class="footer-brand">
+            Made with ❤️ MEETON
+        </p>
+
     </footer>
 
 </div>
 
-<!-- SOCKET.IO -->
+
+<!-- =================================
+     SOCKET.IO
+================================== -->
+
 <script src="/socket.io/socket.io.js"></script>
 
-<!-- MAIN JAVASCRIPT -->
+
+<!-- =================================
+     MAIN JAVASCRIPT
+================================== -->
+
 <script src="script.js"></script>
 
 </body>
