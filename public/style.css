@@ -1,36 +1,62 @@
 
+/* =========================================
+   MEETON - COMPLETE WEBSITE STYLESHEET
+========================================= */
+
+/* GLOBAL RESET */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-html, body {
+html {
     width: 100%;
-    height: 100%;
-    overflow: hidden;
+    min-height: 100%;
+    overflow-x: clip;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+body {
+    width: 100%;
+    min-height: 100vh;
     font-family: Arial, sans-serif;
     background: #101020;
     color: white;
+
+    /* Allow the complete webpage to scroll */
+    overflow-x: clip;
+    overflow-y: auto;
 }
+
+/* =========================================
+   MAIN APP
+========================================= */
 
 .app {
     width: 100%;
-    height: 100vh;
-    height: 100dvh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     padding: 15px 25px 8px;
+    overflow: visible;
 }
 
-/* Header */
+/* =========================================
+   HEADER
+========================================= */
+
 .header {
-    height: 85px;
+    min-height: 85px;
     flex-shrink: 0;
+
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 15px;
+    gap: 15px;
+
+    padding: 10px 15px;
 }
 
 .header h1 {
@@ -44,46 +70,162 @@ html, body {
     font-size: 13px;
 }
 
+/* Brand */
+.brand-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-mark {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 14px;
+    background: linear-gradient(135deg, #7955d9, #5141a5);
+
+    color: white;
+    font-size: 25px;
+    font-weight: bold;
+
+    box-shadow: 0 5px 18px rgba(121, 85, 217, 0.25);
+}
+
 /* Language */
-.language-section {
+.header-actions {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.language-section select {
+.header-actions select {
     padding: 9px;
     border-radius: 7px;
     border: 1px solid #555;
     background: #24243a;
     color: white;
+    cursor: pointer;
 }
 
-/* Main layout */
-.main-layout {
-    flex: 1;
-    min-height: 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 20px;
-    padding: 10px;
+/* =========================================
+   HERO / WELCOME SECTION
+========================================= */
+
+.hero-section {
+    flex-shrink: 0;
+
+    margin: 20px 0 24px;
+    padding: 30px;
+
+    border: 1px solid #51417c;
+    border-radius: 18px;
+
+    background:
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(121, 85, 217, 0.24),
+            transparent 38%
+        ),
+        linear-gradient(135deg, #1b1b30, #151528);
+
     overflow: hidden;
 }
 
-/* Left video section */
+.hero-content {
+    max-width: 760px;
+}
+
+.hero-eyebrow {
+    color: #b9a4ff;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+}
+
+.hero-section h2 {
+    color: #f5f1ff;
+    font-size: clamp(27px, 4vw, 42px);
+    line-height: 1.2;
+    margin-bottom: 14px;
+}
+
+.hero-description {
+    color: #c4bdd8;
+    font-size: 15px;
+    line-height: 1.7;
+    max-width: 650px;
+    margin-bottom: 20px;
+}
+
+.hero-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.hero-tags span {
+    background: #27213e;
+    color: #ded5ff;
+    border: 1px solid #51417c;
+    border-radius: 30px;
+    padding: 8px 13px;
+    font-size: 13px;
+}
+
+/* =========================================
+   MAIN THREE-COLUMN LAYOUT
+========================================= */
+
+.main-layout {
+    width: 100%;
+    min-height: 620px;
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+
+    gap: 20px;
+    padding: 10px;
+
+    /* Do not hide page content */
+    overflow: visible;
+}
+
+/* =========================================
+   VIDEO SECTION
+========================================= */
+
 .video-section {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    min-height: 0;
-    overflow: hidden;
+
+    min-width: 0;
+    min-height: 620px;
+
+    overflow: visible;
+}
+
+.video-section h2 {
+    color: #c4b5fd;
+    font-size: 21px;
+    margin-bottom: 3px;
 }
 
 .video-box {
     position: relative;
-    flex: 1;
-    min-height: 0;
+
+    flex: 1 1 0;
+    min-height: 230px;
+
     overflow: hidden;
+
     background: #25253b;
     border: 2px solid #51417c;
     border-radius: 14px;
@@ -92,8 +234,10 @@ html, body {
 .video-box video {
     width: 100%;
     height: 100%;
+
     display: block;
     object-fit: cover;
+
     background: #171728;
 }
 
@@ -105,8 +249,10 @@ html, body {
     position: absolute;
     bottom: 10px;
     left: 10px;
+
     padding: 6px 12px;
     border-radius: 6px;
+
     background: rgba(0, 0, 0, 0.7);
     font-size: 13px;
 }
@@ -120,13 +266,18 @@ html, body {
 
 .video-controls button {
     flex: 1;
-    padding: 10px 5px;
+
+    padding: 12px 5px;
+    min-height: 44px;
+
     border: none;
     border-radius: 8px;
+
     background: #5141a5;
     color: white;
+
     cursor: pointer;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .video-controls button:hover:not(:disabled) {
@@ -138,50 +289,64 @@ html, body {
     cursor: not-allowed;
 }
 
-/* Centre chat section */
+/* =========================================
+   CHAT SECTION
+========================================= */
+
 .chat-section {
     display: flex;
     flex-direction: column;
+
+    width: 100%;
+    height: 620px;
+    min-width: 0;
     min-height: 0;
-    height: 100%;
+
     overflow: hidden;
 
     background: #1b1b30;
     border: 1px solid #343450;
     border-radius: 14px;
+
     padding: 15px;
 }
 
-/* Chat header */
-.chat-header {
+/* Chat title */
+.chat-section h2 {
     flex-shrink: 0;
-    margin-bottom: 12px;
-}
 
-.chat-header h2 {
     color: #c4b5fd;
     font-size: 21px;
+
     margin-bottom: 8px;
 }
 
+/* Chat status */
 #status {
+    flex-shrink: 0;
+
     color: #a5a5ba;
     font-size: 13px;
+
+    margin-bottom: 12px;
 }
 
 /* =========================================
-   MESSAGES - SCROLLABLE CHAT AREA
+   CHAT MESSAGE AREA
+   Only this area gets an internal scrollbar.
 ========================================= */
 
-.chat-box,
-#chatBox {
-    flex: 1;
+#chatBox,
+.chat-box {
+    flex: 1 1 auto;
     min-height: 0;
+    width: 100%;
 
     overflow-y: auto;
     overflow-x: hidden;
 
     background: #111122;
+
     border-radius: 10px;
     padding: 12px;
     margin-bottom: 12px;
@@ -194,36 +359,33 @@ html, body {
 
     scroll-behavior: smooth;
     overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+
+    scrollbar-width: thin;
+    scrollbar-color: #51417c #1b1b30;
 }
 
-/* Chat scrollbar */
-.chat-box::-webkit-scrollbar,
-#chatBox::-webkit-scrollbar {
-    width: 8px;
+/* Chat scrollbar for Chrome and Edge */
+#chatBox::-webkit-scrollbar,
+.chat-box::-webkit-scrollbar {
+    width: 6px;
 }
 
-.chat-box::-webkit-scrollbar-track,
-#chatBox::-webkit-scrollbar-track {
+#chatBox::-webkit-scrollbar-track,
+.chat-box::-webkit-scrollbar-track {
     background: #1b1b30;
     border-radius: 10px;
 }
 
-.chat-box::-webkit-scrollbar-thumb,
-#chatBox::-webkit-scrollbar-thumb {
+#chatBox::-webkit-scrollbar-thumb,
+.chat-box::-webkit-scrollbar-thumb {
     background: #51417c;
     border-radius: 10px;
 }
 
-.chat-box::-webkit-scrollbar-thumb:hover,
-#chatBox::-webkit-scrollbar-thumb:hover {
+#chatBox::-webkit-scrollbar-thumb:hover,
+.chat-box::-webkit-scrollbar-thumb:hover {
     background: #725bd1;
-}
-
-/* Firefox scrollbar */
-.chat-box,
-#chatBox {
-    scrollbar-width: thin;
-    scrollbar-color: #51417c #1b1b30;
 }
 
 /* Welcome message */
@@ -232,8 +394,10 @@ html, body {
     text-align: center;
     font-size: 14px;
     line-height: 1.5;
+
     margin: auto;
     padding: 10px;
+
     background: transparent;
 }
 
@@ -247,7 +411,6 @@ html, body {
 
     padding: 9px 12px;
     border-radius: 8px;
-    margin-bottom: 0;
 
     font-size: 14px;
     line-height: 1.5;
@@ -256,14 +419,12 @@ html, body {
     word-break: break-word;
 }
 
-/* Your messages */
 .you-message {
     align-self: flex-end;
     background: #5141a5;
     color: white;
 }
 
-/* Stranger messages */
 .stranger-message {
     align-self: flex-start;
     background: #39305e;
@@ -271,7 +432,8 @@ html, body {
 }
 
 /* =========================================
-   MESSAGE INPUT - STAYS AT BOTTOM
+   MESSAGE INPUT
+   Remains below the message area.
 ========================================= */
 
 .message-input,
@@ -285,7 +447,6 @@ html, body {
 
     margin-top: 0;
     margin-bottom: 12px;
-    padding-top: 0;
 
     background: #1b1b30;
 }
@@ -305,6 +466,8 @@ html, body {
 
     background: #292941;
     color: white;
+
+    font-size: 14px;
 }
 
 .message-input input:focus,
@@ -330,6 +493,8 @@ html, body {
     flex-shrink: 0;
 
     padding: 10px 16px;
+    min-height: 40px;
+
     border: none;
     border-radius: 8px;
 
@@ -351,7 +516,7 @@ html, body {
 }
 
 /* =========================================
-   START AND NEXT BUTTONS
+   MAIN BUTTONS
 ========================================= */
 
 .main-buttons {
@@ -362,17 +527,19 @@ html, body {
 
 .main-buttons button {
     flex: 1;
+
     padding: 12px 5px;
     border: none;
     border-radius: 8px;
+
     background: #7955d9;
     color: white;
+
     font-size: 13px;
     cursor: pointer;
 }
 
-.main-buttons button:hover:not(:disabled),
-.message-input button:hover:not(:disabled) {
+.main-buttons button:hover:not(:disabled) {
     background: #9475ed;
 }
 
@@ -381,9 +548,69 @@ html, body {
     cursor: not-allowed;
 }
 
-/* Right side intentionally empty */
+/* =========================================
+   RIGHT FEATURE SECTION
+========================================= */
+
 .empty-section {
     min-width: 0;
+}
+
+.features-section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    min-width: 0;
+}
+
+.features-section > h2 {
+    color: #f1eaff;
+    font-size: 21px;
+    margin-bottom: 3px;
+}
+
+/* Feature cards */
+.feature-card {
+    background: #1b1b30;
+    border: 1px solid #51417c;
+    border-radius: 14px;
+
+    padding: 16px;
+
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-3px);
+    border-color: #7955d9;
+}
+
+.feature-icon {
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: #30264e;
+    border-radius: 12px;
+
+    font-size: 21px;
+    margin-bottom: 10px;
+}
+
+.feature-card h3 {
+    color: #eee8ff;
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.feature-card p {
+    color: #bdb5d2;
+    font-size: 13px;
+    line-height: 1.6;
 }
 
 /* =========================================
@@ -393,17 +620,23 @@ html, body {
 .safety-buttons {
     display: flex;
     gap: 8px;
+
     flex-shrink: 0;
-    margin-top: 10px;
+    margin-top: 0;
 }
 
 .safety-buttons button {
     flex: 1;
+
+    min-height: 40px;
     padding: 10px 5px;
+
     border: none;
     border-radius: 8px;
+
     color: white;
     font-size: 12px;
+
     cursor: pointer;
 }
 
@@ -441,86 +674,134 @@ html, body {
 ========================================= */
 
 footer {
-    height: 25px;
     flex-shrink: 0;
+
+    width: 100%;
     text-align: center;
+
     color: #77778d;
     font-size: 11px;
-    padding-top: 5px;
+
+    padding: 22px 10px 15px;
+}
+
+.footer-brand {
+    color: #a99acb;
+    font-size: 12px;
+    margin-top: 5px;
 }
 
 /* =========================================
-   SMALLER SCREENS
+   TABLETS AND SMALLER SCREENS
 ========================================= */
 
 @media (max-width: 850px) {
-    html, body {
-        height: auto;
-        min-height: 100%;
-        overflow: auto;
-    }
 
     .app {
-        height: auto;
-        min-height: 100vh;
-        min-height: 100dvh;
+        padding: 12px;
     }
 
     .main-layout {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+
+        min-height: 0;
+        gap: 18px;
+        padding: 8px;
+
         overflow: visible;
     }
 
+    /* Video section */
     .video-section {
         min-height: 650px;
+        height: auto;
         overflow: visible;
     }
 
     .video-box {
-        min-height: 250px;
+        flex: 1 1 250px;
+        min-height: 240px;
+        width: 100%;
     }
 
-    .empty-section {
-        display: none;
+    .video-controls {
+        flex-wrap: wrap;
     }
 
-    /* Mobile chat stays a fixed-height chat panel */
+    .video-controls button {
+        min-height: 44px;
+    }
+
+    /* Chat panel */
     .chat-section {
-        height: 480px;
+        width: 100%;
+        height: 520px;
         min-height: 450px;
-        max-height: 75vh;
-        max-height: 75dvh;
+        max-height: none;
+
         overflow: hidden;
     }
 
-    .chat-box,
-    #chatBox {
-        flex: 1;
+    #chatBox,
+    .chat-box {
         min-height: 0;
+        flex: 1 1 auto;
         overflow-y: auto;
     }
 
-    .message-input,
-    .message-area {
+    .message-area,
+    .message-input {
         flex-shrink: 0;
     }
 
+    .message-area input,
+    .message-input input {
+        font-size: 16px;
+    }
+
+    /* Show features below the chat */
+    .features-section {
+        display: flex;
+        height: auto;
+    }
+
+    .feature-card {
+        padding: 14px;
+    }
+
     footer {
-        margin-top: 15px;
+        margin-top: 10px;
     }
 }
 
 /* =========================================
-   VERY SMALL MOBILE SCREENS
+   SMALL MOBILE PHONES
 ========================================= */
 
 @media (max-width: 480px) {
+
     .app {
-        padding: 10px;
+        width: 100%;
+        padding: 8px;
     }
 
+    /* Header */
     .header {
-        padding: 0 5px;
+        min-height: 70px;
+        padding: 5px;
+        gap: 8px;
+    }
+
+    .brand-area {
+        gap: 9px;
+    }
+
+    .brand-mark {
+        width: 40px;
+        height: 40px;
+        font-size: 21px;
+        border-radius: 12px;
     }
 
     .header h1 {
@@ -528,44 +809,232 @@ footer {
     }
 
     .header p {
+        font-size: 11px;
+    }
+
+    .header-actions {
+        gap: 5px;
         font-size: 12px;
     }
 
+    .header-actions select {
+        padding: 7px 5px;
+        font-size: 12px;
+    }
+
+    /* Hero banner */
+    .hero-section {
+        margin: 12px 0 16px;
+        padding: 20px 16px;
+        border-radius: 14px;
+    }
+
+    .hero-section h2 {
+        font-size: 27px;
+    }
+
+    .hero-description {
+        font-size: 14px;
+    }
+
+    .hero-tags {
+        gap: 7px;
+    }
+
+    .hero-tags span {
+        font-size: 11px;
+        padding: 7px 10px;
+    }
+
+    /* Main layout */
+    .main-layout {
+        gap: 14px;
+        padding: 5px;
+    }
+
+    /* Video section */
     .video-section {
         min-height: 550px;
+        gap: 10px;
+    }
+
+    .video-section h2,
+    .chat-section h2 {
+        font-size: 20px;
     }
 
     .video-box {
-        min-height: 220px;
+        min-height: 210px;
+        border-radius: 10px;
     }
 
+    .video-controls button {
+        flex: 1;
+        padding: 12px 8px;
+        font-size: 13px;
+    }
+
+    /* Chat section */
     .chat-section {
-        height: 460px;
+        height: 490px;
         min-height: 440px;
+        padding: 12px;
+        border-radius: 12px;
+    }
+
+    #status {
+        font-size: 13px;
+    }
+
+    #chatBox,
+    .chat-box {
+        padding: 10px;
+        margin-bottom: 10px;
     }
 
     .message {
         max-width: 90%;
         font-size: 13px;
-    }
-
-    .message-input input,
-    .message-area input {
-        padding: 10px;
-        font-size: 13px;
-    }
-
-    .message-input button,
-    .message-area button {
         padding: 10px 12px;
     }
 
+    /* Message input */
+    .message-area,
+    .message-input {
+        gap: 6px;
+        padding: 0;
+        margin-bottom: 10px;
+    }
+
+    .message-area input,
+    .message-input input {
+        padding: 11px;
+        font-size: 16px;
+    }
+
+    .message-area button,
+    .message-input button {
+        padding: 10px 12px;
+    }
+
+    /* Safety buttons */
     .safety-buttons {
         gap: 5px;
     }
 
     .safety-buttons button {
+        min-width: 0;
         padding: 9px 4px;
         font-size: 11px;
     }
+
+    /* Feature cards */
+    .features-section {
+        gap: 10px;
+    }
+
+    .feature-card {
+        padding: 14px;
+    }
+
+    footer {
+        padding: 18px 5px 12px;
+    }
+}
+
+/* =========================================
+   VERY SMALL PHONES
+========================================= */
+
+@media (max-width: 360px) {
+
+    .header {
+        flex-wrap: wrap;
+        padding-bottom: 10px;
+    }
+
+    .header-actions {
+        margin-left: auto;
+    }
+
+    .hero-section h2 {
+        font-size: 24px;
+    }
+
+    .video-controls {
+        flex-direction: column;
+    }
+
+    .video-controls button {
+        width: 100%;
+    }
+
+    .safety-buttons {
+        flex-wrap: wrap;
+    }
+
+    .safety-buttons button {
+        flex: 1 1 28%;
+        font-size: 10px;
+    }
+}
+/* =====================================
+   FINAL MEETON SCROLLING BUG FIX
+===================================== */
+
+/* Let the browser control page scrolling */
+html {
+    height: auto !important;
+    min-height: 100%;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    scroll-behavior: auto !important;
+}
+
+/* Body must NOT create another scrollbar */
+body {
+    width: 100%;
+    height: auto !important;
+    min-height: 100vh;
+    overflow: visible !important;
+}
+
+/* Let the complete page grow naturally */
+.app {
+    height: auto !important;
+    min-height: 100vh;
+    overflow: visible !important;
+}
+
+.main-layout {
+    height: auto !important;
+    min-height: 0;
+    overflow: visible !important;
+}
+
+/* Keep chat panel contained */
+.chat-section {
+    overflow: hidden !important;
+}
+
+/* Allow normal scrolling inside chat */
+#chatBox,
+.chat-box {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+
+    overscroll-behavior-y: auto !important;
+    scroll-behavior: auto !important;
+
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Do not create extra section scrollbars */
+.video-section,
+.features-section {
+    overflow: visible !important;
+}
+
+footer {
+    position: static !important;
 }

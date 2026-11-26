@@ -4,20 +4,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEETON</title>
+    <meta name="theme-color" content="#101020">
+    <meta name="description" content="Meet new people through random text and video chats on MEETON.">
+    <title>MEETON - Meet New People</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="app">
 
+    <!-- HEADER -->
     <header class="header">
-        <div>
-            <h1>❤️MEETON</h1>
-            <p id="subtitle">Meet and chat with strangers</p>
+        <div class="brand-area">
+            <div class="brand-mark" aria-hidden="true">M</div>
+            <div>
+                <h1>MEETON</h1>
+                <p id="subtitle">Meet and chat with strangers</p>
+            </div>
         </div>
 
-        <div>
+        <div class="header-actions">
             <label id="languageLabel" for="language">Language:</label>
             <select id="language">
                 <option value="en">English</option>
@@ -26,10 +32,44 @@
         </div>
     </header>
 
+    <!-- WELCOME BANNER -->
+    <section class="hero-section" aria-labelledby="heroHeading">
+        <div class="hero-content">
+            <p class="hero-eyebrow"
+               data-en="MEET • CHAT • CONNECT"
+               data-ta="சந்திக்கலாம் • பேசலாம் • இணைவோம்">
+                MEET • CHAT • CONNECT
+            </p>
+
+            <h2 id="heroHeading"
+                data-en="Meet someone new. Start a conversation."
+                data-ta="புதிய நபரைச் சந்தியுங்கள். உரையாடலைத் தொடங்குங்கள்.">
+                Meet someone new. Start a conversation.
+            </h2>
+
+            <p class="hero-description"
+               data-en="Discover new people, share conversations and make connections through text and video chat."
+               data-ta="புதிய நபர்களைச் சந்தித்து, குறுஞ்செய்தி மற்றும் வீடியோ உரையாடல்கள் மூலம் நட்பை உருவாக்குங்கள்.">
+                Discover new people, share conversations and make connections through text and video chat.
+            </p>
+
+            <div class="hero-tags">
+                <span>💬 Text Chat</span>
+                <span>📹 Video Chat</span>
+                <span>🌍 New Connections</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN CONTENT -->
     <main class="main-layout">
 
         <!-- VIDEO SECTION -->
         <section class="video-section">
+
+            <h2 data-en="Video Chat" data-ta="வீடியோ அரட்டை">
+                Video Chat
+            </h2>
 
             <div class="video-box">
                 <video id="localVideo" autoplay muted playsinline></video>
@@ -57,7 +97,7 @@
 
             <div id="chatBox">
                 <p id="welcomeMessage">
-                    Welcome to ❤️MEETON! Click Start to connect with a stranger.
+                    Welcome to MEETON! Click Start to connect with a stranger.
                 </p>
             </div>
 
@@ -82,19 +122,82 @@
 
         </section>
 
-        <!-- EMPTY RIGHT SECTION -->
-        <section class="empty-section"></section>
+        <!-- FEATURE SECTION -->
+        <aside class="empty-section features-section">
+
+            <h2 data-en="Why MEETON?" data-ta="ஏன் MEETON?">
+                Why MEETON?
+            </h2>
+
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3 data-en="Easy Conversations"
+                    data-ta="எளிய உரையாடல்கள்">
+                    Easy Conversations
+                </h3>
+                <p data-en="Start chatting with new people through simple text messages."
+                   data-ta="எளிய குறுஞ்செய்திகள் மூலம் புதிய நபர்களுடன் பேசத் தொடங்குங்கள்.">
+                    Start chatting with new people through simple text messages.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📹</div>
+                <h3 data-en="Video Connections"
+                    data-ta="வீடியோ இணைப்புகள்">
+                    Video Connections
+                </h3>
+                <p data-en="Connect face-to-face through video chat."
+                   data-ta="வீடியோ அரட்டை மூலம் நேருக்கு நேர் இணையுங்கள்.">
+                    Connect face-to-face through video chat.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3 data-en="You Stay in Control"
+                    data-ta="உங்கள் கட்டுப்பாட்டில்">
+                    You Stay in Control
+                </h3>
+                <p data-en="End a chat, find someone new, or use the report and block options."
+                   data-ta="உரையாடலை முடிக்கலாம், புதிய நபரைத் தேடலாம் அல்லது புகார் மற்றும் தடை விருப்பங்களைப் பயன்படுத்தலாம்.">
+                    End a chat, find someone new, or use the report and block options.
+                </p>
+            </div>
+
+        </aside>
 
     </main>
 
+    <!-- FOOTER -->
     <footer>
         <p>Connect. Chat. Make Friends.</p>
+        <p class="footer-brand">Made with ❤️ MEETON</p>
     </footer>
 
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="script.js"></script>
+
+<!-- Translate the new homepage content when the language changes -->
+<script>
+(function () {
+    const languageSelect = document.getElementById("language");
+    const translatedElements = document.querySelectorAll("[data-en][data-ta]");
+
+    function updateHomepageLanguage() {
+        const language = languageSelect.value === "ta" ? "ta" : "en";
+
+        translatedElements.forEach(function (element) {
+            element.textContent = element.getAttribute("data-" + language);
+        });
+    }
+
+    languageSelect.addEventListener("change", updateHomepageLanguage);
+    updateHomepageLanguage();
+})();
+</script>
 
 </body>
 </html>
